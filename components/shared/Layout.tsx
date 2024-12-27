@@ -14,7 +14,7 @@ const Layout = ({ children }: LayoutProps) => {
   const router = useRouter();
 
   return (
-    <div className="w-[70%] py-10 mx-auto space-y-8">
+    <div className="w-full px-4 md:w-[70%] py-10 mx-auto space-y-8">
       <nav className="flex items-center justify-between">
         <div
           className="flex items-center justify-center gap-1 cursor-pointer"
@@ -28,13 +28,15 @@ const Layout = ({ children }: LayoutProps) => {
           <Link href="/converter" className="cursor-pointer">
             <Podcast strokeWidth={1.25} />
           </Link>
-          <Link
-            href="/converter"
-            onClick={onListening}
+          <button
+            onClick={() => {
+              router.push('/converter');
+              onListening();
+            }}
             className="cursor-pointer"
           >
             <Mic strokeWidth={1.25} />
-          </Link>
+          </button>
           <Link href="/history" className="cursor-pointer">
             <NotepadText strokeWidth={1.25} />
           </Link>

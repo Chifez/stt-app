@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardFooter } from '../ui/card';
-import { Copy, Trash, Volume2 } from 'lucide-react';
-import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
-import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
+import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
+import TranscriptCard from '../shared/TranscriptCard';
+import { Filter } from 'lucide-react';
 
 interface Transcript {
   id: string;
@@ -13,92 +12,83 @@ interface Transcript {
   date: string;
 }
 
+const BG_COLORS = [
+  'bg-blue-300/90',
+  'bg-green-300/90',
+  'bg-purple-300/90',
+] as const;
+
 const HistoryPage = () => {
   const [history, setHistory] = useState<Transcript[]>([]);
+  const [cardColors, setCardColors] = useState<Record<string, string>>({});
+
   const { convertToSpeech, isSpeaking, speakingIndex, speakingId } =
     useConverter();
 
-  const loadHistory = () => {
+  // Memoize the color generation function
+  const generateColorMap = useCallback((transcripts: Transcript[]) => {
+    const newColors: Record<string, string> = {};
+    transcripts.forEach((transcript) => {
+      if (!cardColors[transcript.id]) {
+        newColors[transcript.id] =
+          BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
+      }
+    });
+    return (prev: Record<string, string>) => ({ ...prev, ...newColors });
+  }, []);
+
+  // Memoize the load history function
+  const loadHistory = useCallback(() => {
     const savedTranscripts = localStorage.getItem('transcripts');
     if (savedTranscripts) {
       const parsedTranscripts: Transcript[] = JSON.parse(savedTranscripts);
-      console.log(parsedTranscripts);
-      setHistory(parsedTranscripts);
+      const sortedTranscripts = parsedTranscripts.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setHistory(sortedTranscripts);
+      setCardColors(generateColorMap(sortedTranscripts));
     }
+  }, []);
+
+  // Memoize the delete handler
+  const handleDelete = (id: string) => {
+    deleteTranscript(id);
+    loadHistory();
   };
 
-  const BG_COLOR = ['bg-blue-300/90', 'bg-green-300/90', 'bg-purple-300/90'];
-
-  const generateBg = () => {
-    const bgIdx = Math.floor(Math.random() * BG_COLOR.length);
-    return BG_COLOR[bgIdx];
-  };
+  // Memoize the speak handler
+  const handleSpeak = useCallback(
+    (text: string, id: string) => {
+      convertToSpeech(text, id);
+    },
+    [convertToSpeech]
+  );
 
   useEffect(() => {
     loadHistory();
   }, []);
 
-  const handleDelete = (id: string) => {
-    deleteTranscript(id);
-    loadHistory(); // Reload the list after deletion
-  };
-
-  const highlightSpokenText = (text: string, index: number) => {
-    if (!isSpeaking) return text;
-
-    const words = text.split(' ');
-    const beforeSpoken = words.slice(0, index).join(' ');
-    const currentWord = words[index];
-    const afterSpoken = words.slice(index + 1).join(' ');
-
-    return (
-      <>
-        {beforeSpoken}{' '}
-        <span className="bg-black text-white px-1 rounded-sm">
-          {currentWord}
-        </span>{' '}
-        {afterSpoken}
-      </>
-    );
-  };
-
   return (
-    <div className="columns-2 space-y-6 overflow-visible py-2">
-      {history.map((item) => (
-        <Card
-          key={item.id}
-          className={`w-full h-fit rounded-lg p-4 break-inside-avoid overflow-visible ${generateBg()}`}
-        >
-          <CardContent className="border-b">
-            <p>
-              {isSpeaking && speakingId === item.id
-                ? highlightSpokenText(item.text, speakingIndex)
-                : item.text}
-            </p>
-          </CardContent>
-          <CardFooter className="flex items-start gap-4 p-4">
-            <Trash
-              strokeWidth={1.25}
-              size={16}
-              className="cursor-pointer"
-              onClick={() => handleDelete(item.id)}
-            />
-            <Copy
-              strokeWidth={1.25}
-              size={16}
-              className="cursor-pointer"
-              onClick={() => copyTranscript(item.text)}
-            />
-            <Volume2
-              strokeWidth={1.25}
-              size={16}
-              className="cursor-pointer"
-              onClick={() => convertToSpeech(item.text, item.id)}
-            />
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
+    <>
+      <div>
+        <Filter />
+      </div>
+      <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
+        {history.map((item) => (
+          <TranscriptCard
+            key={item.id}
+            id={item.id}
+            text={item.text}
+            bgColor={cardColors[item.id]}
+            isSpeaking={isSpeaking}
+            speakingIndex={speakingIndex}
+            speakingId={speakingId}
+            onDelete={handleDelete}
+            onSpeak={handleSpeak}
+          />
+        ))}
+      </div>
+    </>
   );
 };
 

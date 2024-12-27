@@ -22,11 +22,13 @@ const useConverter = () => {
         window.SpeechRecognition || window.webkitSpeechRecognition;
       recongitionRef.current = new SpeechRecognition();
 
-      if (recongitionRef.current) {
-        recongitionRef.current.continuous = true;
-        recongitionRef.current.interimResults = true;
+      const recongition = recongitionRef.current as any;
 
-        recongitionRef.current.onresult = (event: {
+      if (recongition) {
+        recongition.continuous = true;
+        recongition.interimResults = true;
+
+        recongition.onresult = (event: {
           results: Iterable<unknown> | ArrayLike<unknown>;
         }) => {
           let finalTranscript = '';
@@ -49,12 +51,12 @@ const useConverter = () => {
           }
         };
 
-        recongitionRef.current.onerror = (event: any) => {
+        recongition.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
           setTranscript((prev) => prev + ' (Error occurred)');
         };
 
-        recongitionRef.current.start();
+        recongition.start();
         setisListening(true);
       }
     } else {
@@ -69,7 +71,7 @@ const useConverter = () => {
    */
   const stopListening = () => {
     if (recongitionRef.current) {
-      recongitionRef.current.stop();
+      (recongitionRef.current as any).stop();
     }
     setisListening(false);
   };
@@ -77,9 +79,37 @@ const useConverter = () => {
   const convertToSpeech = (text: string, id: string) => {
     if (!text) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Check browser support
+    if (!window.speechSynthesis) {
+      console.error('Speech synthesis not supported');
+      return;
+    }
 
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const resetStates = () => {
+      setIsSpeaking(false);
+      setSpeakingId(null);
+      setSpeakingIndex(0);
+    };
+
+    // If already speaking, just stop
+    if (isSpeaking) {
+      resetStates();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
     let wordIndex = 0;
+
+    // Clean up function for event listeners
+    const cleanup = () => {
+      utterance.onboundary = null;
+      utterance.onstart = null;
+      utterance.onend = null;
+      utterance.onerror = null;
+    };
 
     utterance.onboundary = (event) => {
       if (event.name === 'word') {
@@ -95,12 +125,23 @@ const useConverter = () => {
     };
 
     utterance.onend = () => {
-      setIsSpeaking(false);
-      setSpeakingId(null);
-      setSpeakingIndex(0);
+      resetStates();
+      cleanup();
     };
 
-    window.speechSynthesis.speak(utterance);
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      resetStates();
+      cleanup();
+    };
+
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Failed to start speech synthesis:', error);
+      resetStates();
+      cleanup();
+    }
   };
 
   return {

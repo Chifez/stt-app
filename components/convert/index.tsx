@@ -29,6 +29,7 @@ const Convert = () => {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // this isn't working for some reason
     if (contentRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
@@ -36,7 +37,7 @@ const Convert = () => {
 
   return (
     <>
-      <Card className="relative w-[80%] min-h-[200px] overflow-y-scroll scrollbar-hide max-h-[250px] mx-auto py-8 px-2 bg-blue-300/80">
+      <Card className="relative w-full md:w-[80%] min-h-[300px] md:min-h-[200px] overflow-y-scroll scrollbar-hide max-h-[400px] md:max-h-[250px] mx-auto py-8 px-2 bg-blue-300/80">
         <div className="absolute top-2 z-10 right-2 flex items-center gap-4">
           <span
             className="cursor-pointer"
@@ -66,12 +67,12 @@ const Convert = () => {
               <>
                 <span className="flex flex-wrap">
                   {transcript}{' '}
-                  <p className="bg-black px-1 w-fit rounded-sm text-white">
-                    {interimTranscript}
-                    {isListening && (
+                  {isListening && (
+                    <p className="bg-black px-1 w-fit rounded-sm text-white">
+                      {interimTranscript}
                       <span className="inline-block w-[2px] h-4 ml-[2px] bg-white animate-caret" />
-                    )}
-                  </p>
+                    </p>
+                  )}
                 </span>
               </>
             ) : (

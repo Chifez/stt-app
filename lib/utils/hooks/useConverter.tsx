@@ -13,6 +13,7 @@ const useConverter = () => {
    * @returns {void}
    */
   const convertToText = () => {
+    if (isListening == true) return;
     if (window.SpeechRecognition || window.webkitSpeechRecognition) {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;

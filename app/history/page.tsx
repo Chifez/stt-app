@@ -1,5 +1,10 @@
-const History = () => {
-  return <div>History</div>;
-};
+import Layout from '@/components/shared/Layout';
+import HistoryPage from '@/components/history';
 
-export default History;
+export default function History() {
+  return (
+    <Layout>
+      <HistoryPage />
+    </Layout>
+  );
+}

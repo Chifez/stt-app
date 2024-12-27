@@ -1,11 +1,10 @@
+import Layout from '@/components/shared/Layout';
 import Convert from '@/components/convert';
 
-const Converter = () => {
+export default function ConverterPage() {
   return (
-    <div className=" w-full p-20 flex items-center justify-center">
+    <Layout>
       <Convert />
-    </div>
+    </Layout>
   );
-};
-
-export default Converter;
+}

@@ -4,6 +4,9 @@ const useConverter = () => {
   const [transcript, setTranscript] = useState('');
   const [isListening, setisListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingIndex, setSpeakingIndex] = useState(0);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   const recongitionRef = useRef(null);
 
@@ -71,6 +74,35 @@ const useConverter = () => {
     setisListening(false);
   };
 
+  const convertToSpeech = (text: string, id: string) => {
+    if (!text) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    let wordIndex = 0;
+
+    utterance.onboundary = (event) => {
+      if (event.name === 'word') {
+        setSpeakingIndex(wordIndex);
+        wordIndex++;
+      }
+    };
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setSpeakingId(id);
+      setSpeakingIndex(0);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setSpeakingId(null);
+      setSpeakingIndex(0);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   return {
     transcript,
     interimTranscript,
@@ -79,6 +111,10 @@ const useConverter = () => {
     setisListening,
     stopListening,
     convertToText,
+    convertToSpeech,
+    isSpeaking,
+    speakingIndex,
+    speakingId,
   };
 };
 export default useConverter;

@@ -32,6 +32,11 @@ const TranscriptCard = memo(
     const [editing, setEditing] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
 
+    const toggleEdit = () => {
+      if (!text) return;
+      setEditing(!editing);
+    };
+
     const highlightSpokenText = (text: string, index: number) => {
       if (!isSpeaking) return text;
 
@@ -66,7 +71,7 @@ const TranscriptCard = memo(
             onSave={(newText) => onEdit?.(id, newText)}
             className="whitespace-pre-wrap"
             isEditing={editing}
-            setIsEditing={(e: any) => setEditing}
+            setIsEditing={setEditing}
           />
         </CardContent>
         <CardFooter className="flex items-start gap-4 p-4 action-icons">
@@ -89,12 +94,9 @@ const TranscriptCard = memo(
             className="cursor-pointer"
             onClick={() => onSpeak(text, id)}
           />
-          {/* <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="cursor-pointer"
-          >
+          <button onClick={toggleEdit} className="cursor-pointer">
             <Pencil size={14} strokeWidth={1.25} />
-          </button> */}
+          </button>
         </CardFooter>
       </Card>
     );

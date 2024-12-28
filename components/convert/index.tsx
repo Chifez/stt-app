@@ -13,11 +13,12 @@ import { AudioWave } from '../shared/AudioWave';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
 import { SaveDialog } from '../shared/Dialog';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import ShareTranscript from '../shared/shareTranscript';
 import EditableContent from '../shared/EditableContent';
 
 const Convert = () => {
+  const [editing, setEditing] = useState(false);
   const {
     transcript,
     interimTranscript,
@@ -30,12 +31,17 @@ const Convert = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // useEffect(() => {
-  //   // this isn't working for some reason
-  //   if (contentRef.current) {
-  //     contentRef.current.scrollTop = contentRef.current.scrollHeight;
-  //   }
-  // }, [transcript, interimTranscript]);
+  const toggleEdit = () => {
+    if (!transcript) return;
+    setEditing(!editing);
+  };
+
+  useEffect(() => {
+    // this isn't working for some reason
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+  }, [transcript, interimTranscript]);
 
   return (
     <>
@@ -56,18 +62,23 @@ const Convert = () => {
             bgColor="bg-blue-300"
             cardRef={cardRef}
           />
+          <button onClick={toggleEdit} className="cursor-pointer">
+            <Pencil size={14} strokeWidth={1.25} />
+          </button>
         </div>
         <CardContent
           ref={contentRef}
-          className="flex-1 overflow-y-auto scrollbar-hide"
+          className="flex-1 min-h-[80%] overflow-y-auto scrollbar-hide"
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col h-full">
             {transcript || interimTranscript ? (
               <>
                 <EditableContent
                   content={transcript}
                   onSave={setTranscript}
-                  className="flex flex-wrap"
+                  className="flex flex-wrap h-full"
+                  isEditing={editing}
+                  setIsEditing={setEditing}
                 />
                 {isListening && (
                   <p className="bg-black px-1 w-fit rounded-sm text-white">

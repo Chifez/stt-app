@@ -2,7 +2,7 @@
 
 import { ChevronLeftIcon, Mic, NotepadText, Podcast } from 'lucide-react';
 import useConverter from '@/lib/utils/hooks/useConverter';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface LayoutProps {
@@ -12,6 +12,16 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { convertToText: onListening } = useConverter();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const goToConverter = () => {
+    if (pathname !== '/converter') {
+      // Navigate to the converter page if not already there
+      router.push('/converter');
+    }
+    // Call the onListening function
+    onListening();
+  };
 
   return (
     <div className="w-full px-4 md:w-[70%] py-10 mx-auto space-y-8">
@@ -28,15 +38,12 @@ const Layout = ({ children }: LayoutProps) => {
           <Link href="/converter" className="cursor-pointer">
             <Podcast strokeWidth={1.25} />
           </Link>
-          <button
-            onClick={() => {
-              router.push('/converter');
-              onListening();
-            }}
-            className="cursor-pointer"
-          >
+          <Link href="/converter" className="cursor-pointer">
             <Mic strokeWidth={1.25} />
-          </button>
+          </Link>
+          {/* <button onClick={goToConverter} className="cursor-pointer">
+            <Mic strokeWidth={1.25} />
+          </button> */}
           <Link href="/history" className="cursor-pointer">
             <NotepadText strokeWidth={1.25} />
           </Link>

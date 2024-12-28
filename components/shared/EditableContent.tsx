@@ -7,18 +7,17 @@ interface EditableContentProps {
   content: string;
   onSave: (newContent: string) => void;
   className?: string;
-  //   isEditing:boolean;
-  //   setIsEditing:() => void;
+  isEditing: boolean;
+  setIsEditing: (e: any) => void;
 }
 
 const EditableContent = ({
   content,
   onSave,
   className = '',
-}: //   setIsEditing,
-//   isEditing,
-EditableContentProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  setIsEditing,
+  isEditing,
+}: EditableContentProps) => {
   const [text, setText] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,17 +58,11 @@ EditableContentProps) => {
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           className={`w-full bg-transparent outline-none resize-none ${className}`}
-          rows={1}
+          rows={5}
         />
       ) : (
         <div className="relative">
           <p className={className}>{content}</p>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Pencil size={14} strokeWidth={1.25} />
-          </button>
         </div>
       )}
     </div>

@@ -86,7 +86,7 @@ const HistoryPage = () => {
     <>
       <div className="flex items-center justify-center gap-4 w-full">
         <div className="w-full  flex items-center justify-center">
-          <div className="relative w-[40%] flex items-center justify-center">
+          <div className="relative w-[90%] md:w-[60%] lg:w-[40%] flex items-center justify-center">
             <Input
               className="w-full border border-black focus-visible:ring-0"
               placeholder="Search history"

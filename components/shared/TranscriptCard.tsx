@@ -1,7 +1,9 @@
-import { memo } from 'react';
+import { memo, useRef, useState } from 'react';
 import { Card, CardContent, CardFooter } from '../ui/card';
-import { Copy, Trash, Volume2 } from 'lucide-react';
+import { Copy, Trash, Volume2, Pencil } from 'lucide-react';
 import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
+import ShareTranscript from './shareTranscript';
+import EditableContent from './EditableContent';
 
 interface TranscriptCardProps {
   id: string;
@@ -12,6 +14,7 @@ interface TranscriptCardProps {
   speakingId: string | null;
   onDelete: (id: string) => void;
   onSpeak: (text: string, id: string) => void;
+  onEdit?: (id: string, newText: string) => void;
 }
 
 const TranscriptCard = memo(
@@ -24,7 +27,11 @@ const TranscriptCard = memo(
     speakingId,
     onDelete,
     onSpeak,
+    onEdit,
   }: TranscriptCardProps) => {
+    const [editing, setEditing] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+
     const highlightSpokenText = (text: string, index: number) => {
       if (!isSpeaking) return text;
 
@@ -46,16 +53,23 @@ const TranscriptCard = memo(
 
     return (
       <Card
+        ref={cardRef}
         className={`w-full h-fit rounded-lg p-4 break-inside-avoid overflow-visible ${bgColor}`}
       >
         <CardContent className="border-b">
-          <p>
-            {isSpeaking && speakingId === id
-              ? highlightSpokenText(text, speakingIndex)
-              : text}
-          </p>
+          <EditableContent
+            content={
+              isSpeaking && speakingId === id
+                ? highlightSpokenText(text, speakingIndex)
+                : text
+            }
+            onSave={(newText) => onEdit?.(id, newText)}
+            className="whitespace-pre-wrap"
+            isEditing={editing}
+            setIsEditing={(e: any) => setEditing}
+          />
         </CardContent>
-        <CardFooter className="flex items-start gap-4 p-4">
+        <CardFooter className="flex items-start gap-4 p-4 action-icons">
           <Trash
             strokeWidth={1.25}
             size={16}
@@ -68,12 +82,19 @@ const TranscriptCard = memo(
             className="cursor-pointer"
             onClick={() => copyTranscript(text)}
           />
+          <ShareTranscript text={text} bgColor={bgColor} cardRef={cardRef} />
           <Volume2
             strokeWidth={1.25}
             size={16}
             className="cursor-pointer"
             onClick={() => onSpeak(text, id)}
           />
+          {/* <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="cursor-pointer"
+          >
+            <Pencil size={14} strokeWidth={1.25} />
+          </button> */}
         </CardFooter>
       </Card>
     );

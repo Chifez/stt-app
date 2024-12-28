@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
 import TranscriptCard from '../shared/TranscriptCard';
-import { Filter } from 'lucide-react';
+import { Filter, ListFilter, Search } from 'lucide-react';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
 
 interface Transcript {
   id: string;
@@ -64,14 +66,39 @@ const HistoryPage = () => {
     [convertToSpeech]
   );
 
+  const handleEdit = (id: string, newText: string) => {
+    const savedTranscripts = localStorage.getItem('transcripts');
+    if (savedTranscripts) {
+      const transcripts = JSON.parse(savedTranscripts);
+      const updatedTranscripts = transcripts.map((t: Transcript) =>
+        t.id === id ? { ...t, text: newText } : t
+      );
+      localStorage.setItem('transcripts', JSON.stringify(updatedTranscripts));
+      loadHistory();
+    }
+  };
+
   useEffect(() => {
     loadHistory();
   }, []);
 
   return (
     <>
-      <div>
-        <Filter />
+      <div className="flex items-center justify-center gap-4 w-full">
+        <div className="w-full  flex items-center justify-center">
+          <div className="relative w-[40%] flex items-center justify-center">
+            <Input
+              className="w-full border border-black focus-visible:ring-0"
+              placeholder="Search history"
+            />
+            <div className="absolute right-1 bg-black p-2 rounded">
+              <Search size={18} strokeWidth={1.25} className="stroke-white" />
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-end ">
+          <ListFilter strokeWidth={1.25} />
+        </div>
       </div>
       <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
         {history.map((item) => (
@@ -85,6 +112,7 @@ const HistoryPage = () => {
             speakingId={speakingId}
             onDelete={handleDelete}
             onSpeak={handleSpeak}
+            onEdit={handleEdit}
           />
         ))}
       </div>

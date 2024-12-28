@@ -7,14 +7,15 @@ declare global {
   }
 }
 
-import { Copy, Download, Mic, RotateCcw, Square } from 'lucide-react';
+import { Copy, Mic, RotateCcw, Square, Pencil } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { AudioWave } from '../shared/AudioWave';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
-import { downloadTranscript } from '@/lib/utils/functions/downloadTranscript';
 import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect } from 'react';
+import ShareTranscript from '../shared/shareTranscript';
+import EditableContent from '../shared/EditableContent';
 
 const Convert = () => {
   const {
@@ -27,18 +28,22 @@ const Convert = () => {
   } = useConverter();
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // this isn't working for some reason
-    if (contentRef.current) {
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-    }
-  }, [transcript, interimTranscript]);
+  // useEffect(() => {
+  //   // this isn't working for some reason
+  //   if (contentRef.current) {
+  //     contentRef.current.scrollTop = contentRef.current.scrollHeight;
+  //   }
+  // }, [transcript, interimTranscript]);
 
   return (
     <>
-      <Card className="relative w-full md:w-[80%] min-h-[300px] md:min-h-[200px] overflow-y-scroll scrollbar-hide max-h-[400px] md:max-h-[250px] mx-auto py-8 px-2 bg-blue-300/80">
-        <div className="absolute top-2 z-10 right-2 flex items-center gap-4">
+      <Card
+        ref={cardRef}
+        className="relative w-full md:w-[80%] min-h-[300px] md:min-h-[200px] overflow-y-scroll scrollbar-hide max-h-[400px] md:max-h-[250px] mx-auto py-8 px-2 bg-blue-300/80"
+      >
+        <div className="absolute top-2 z-10 right-2 flex items-center gap-4 action-icons">
           <span
             className="cursor-pointer"
             onClick={() => copyTranscript(transcript)}
@@ -46,17 +51,11 @@ const Convert = () => {
             <Copy size={16} strokeWidth={1.25} />
           </span>
           <SaveDialog transcript={transcript} />
-          <span
-            className="cursor-pointer"
-            onClick={() =>
-              downloadTranscript({
-                text: transcript,
-                date: JSON.stringify(Date.now()),
-              })
-            }
-          >
-            <Download size={16} strokeWidth={1.25} />
-          </span>
+          <ShareTranscript
+            text={transcript}
+            bgColor="bg-blue-300"
+            cardRef={cardRef}
+          />
         </div>
         <CardContent
           ref={contentRef}
@@ -65,15 +64,17 @@ const Convert = () => {
           <div className="flex flex-col">
             {transcript || interimTranscript ? (
               <>
-                <span className="flex flex-wrap">
-                  {transcript}{' '}
-                  {isListening && (
-                    <p className="bg-black px-1 w-fit rounded-sm text-white">
-                      {interimTranscript}
-                      <span className="inline-block w-[2px] h-4 ml-[2px] bg-white animate-caret" />
-                    </p>
-                  )}
-                </span>
+                <EditableContent
+                  content={transcript}
+                  onSave={setTranscript}
+                  className="flex flex-wrap"
+                />
+                {isListening && (
+                  <p className="bg-black px-1 w-fit rounded-sm text-white">
+                    {interimTranscript}
+                    <span className="inline-block w-[2px] h-4 ml-[2px] bg-white animate-caret" />
+                  </p>
+                )}
               </>
             ) : (
               <p className="text-gray-500 text-start italic">

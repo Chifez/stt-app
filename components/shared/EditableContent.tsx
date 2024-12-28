@@ -1,10 +1,9 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 interface EditableContentProps {
-  content: string;
+  content: any;
   onSave: (newContent: string) => void;
   className?: string;
   isEditing: boolean;

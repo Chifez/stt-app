@@ -1,12 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
 import TranscriptCard from '../shared/TranscriptCard';
-import { Filter, ListFilter, Search } from 'lucide-react';
+import { ListFilter, Search } from 'lucide-react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
 import Link from 'next/link';
 
 interface Transcript {
@@ -53,7 +52,6 @@ const HistoryPage = () => {
     }
   }, []);
 
-  // Memoize the delete handler
   const handleDelete = (id: string) => {
     deleteTranscript(id);
     loadHistory();

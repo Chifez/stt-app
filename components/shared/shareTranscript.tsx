@@ -23,7 +23,10 @@ const ShareTranscript = ({ text, bgColor, cardRef }: ShareTranscriptProps) => {
 
     // Temporarily hide the icons
     const icons = cardRef.current.querySelector('.action-icons');
-    if (icons) icons.classList.add('hidden');
+    if (icons) {
+      // Remove the icon node from the parent node, so it doesnt show in the generated image
+      icons.parentNode?.removeChild(icons);
+    }
 
     try {
       const canvas = await html2canvas(cardRef.current, {
@@ -31,14 +34,18 @@ const ShareTranscript = ({ text, bgColor, cardRef }: ShareTranscriptProps) => {
         scale: 2,
       });
 
-      // Show the icons again
-      if (icons) icons.classList.remove('hidden');
-
       return canvas;
     } catch (error) {
       console.error('Error generating image:', error);
-      if (icons) icons.classList.remove('hidden');
+      if (icons) {
+        cardRef.current?.appendChild(icons);
+      }
       return null;
+    } finally {
+      // Show the icons again
+      if (icons) {
+        cardRef.current?.appendChild(icons);
+      }
     }
   };
 

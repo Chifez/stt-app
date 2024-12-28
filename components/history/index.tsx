@@ -7,6 +7,7 @@ import TranscriptCard from '../shared/TranscriptCard';
 import { Filter, ListFilter, Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
+import Link from 'next/link';
 
 interface Transcript {
   id: string;
@@ -91,31 +92,51 @@ const HistoryPage = () => {
               className="w-full border border-black focus-visible:ring-0"
               placeholder="Search history"
             />
-            <div className="absolute right-1 bg-black p-2 rounded">
+            <button className="absolute right-1 bg-black p-2 rounded">
               <Search size={18} strokeWidth={1.25} className="stroke-white" />
-            </div>
+            </button>
           </div>
         </div>
         <div className="flex items-center justify-end ">
           <ListFilter strokeWidth={1.25} />
         </div>
       </div>
-      <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
-        {history.map((item) => (
-          <TranscriptCard
-            key={item.id}
-            id={item.id}
-            text={item.text}
-            bgColor={cardColors[item.id]}
-            isSpeaking={isSpeaking}
-            speakingIndex={speakingIndex}
-            speakingId={speakingId}
-            onDelete={handleDelete}
-            onSpeak={handleSpeak}
-            onEdit={handleEdit}
-          />
-        ))}
-      </div>
+      {history.length ? (
+        <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
+          {history.map((item) => (
+            <TranscriptCard
+              key={item.id}
+              id={item.id}
+              text={item.text}
+              bgColor={cardColors[item.id]}
+              isSpeaking={isSpeaking}
+              speakingIndex={speakingIndex}
+              speakingId={speakingId}
+              onDelete={handleDelete}
+              onSpeak={handleSpeak}
+              onEdit={handleEdit}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4 flex-1 flex flex-col text-center items-center justify-center w-full h-[400px] border border-black rounded-md p-4">
+          <div>
+            <p className="font-semibold italic">
+              You have no saved transcripts
+            </p>
+            <p className="text-sm">
+              Start by making a recording
+              <br /> All saved transcripts will appear here
+            </p>
+          </div>
+          <Link
+            href="/converter"
+            className="text-sm bg-black text-white rounded p-2"
+          >
+            Go to converter
+          </Link>
+        </div>
+      )}
     </>
   );
 };

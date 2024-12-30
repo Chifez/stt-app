@@ -1,48 +1,40 @@
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 export function ImageCarousel() {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
-  const [count, setCount] = React.useState(0);
 
   const slides = [
     {
       title: 'Convert voice into text.',
       description:
         'Now you can easily translate your beautiful sound waves to text',
-      image: '/tts-banner.png',
     },
     {
-      title: 'Record voice on the go',
-      description:
-        'Now you can easily translate your beautiful sound waves to text',
-      image: '/tts-banner.png',
+      title: 'Transcribe audio files',
+      description: 'import and transcribe audio files all in one place',
     },
     {
-      title: 'Scope your translations',
+      title: 'Save your transcripts',
       description:
-        'Now you can easily translate your beautiful sound waves to text',
-      image: '/tts-banner.png',
+        'Save, share and download your transcripts whenever you want',
     },
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api) {
       return;
     }
-    setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap() + 1);
 
     api.on('select', () => {
@@ -68,8 +60,8 @@ export function ImageCarousel() {
                     {items.description}
                   </p>
                 </div>
-                <div className="relative w-[600px] h-[300px] ">
-                  <Image src={items.image} fill alt="converter" />
+                <div className=" relative w-[600px] h-[300px] ">
+                  <Image src="/tts-banner.png" fill alt="converter" />
                 </div>
               </>
             </CarouselItem>

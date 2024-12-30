@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import {
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
 import TranscriptCard from '../shared/TranscriptCard';
@@ -23,9 +29,17 @@ const BG_COLORS = [
 const HistoryPage = () => {
   const [history, setHistory] = useState<Transcript[]>([]);
   const [cardColors, setCardColors] = useState<Record<string, string>>({});
+  const [searchValue, setSearchValue] = useState<string>('');
 
   const { convertToSpeech, isSpeaking, speakingIndex, speakingId } =
     useConverter();
+
+  const filteredHistory = useMemo(() => {
+    if (!searchValue) return history;
+    return history.filter((item) =>
+      item.text.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [history, searchValue]);
 
   // Memoize the color generation function
   const generateColorMap = useCallback((transcripts: Transcript[]) => {
@@ -87,21 +101,23 @@ const HistoryPage = () => {
         <div className="w-full  flex items-center justify-center">
           <div className="relative w-[90%] md:w-[60%] lg:w-[40%] flex items-center justify-center">
             <Input
+              value={searchValue}
               className="w-full border border-black focus-visible:ring-0"
               placeholder="Search history"
+              onChange={(e) => setSearchValue(e.target.value)}
             />
             <button className="absolute right-1 bg-black p-2 rounded">
               <Search size={18} strokeWidth={1.25} className="stroke-white" />
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-end ">
+        {/* <div className="flex items-center justify-end ">
           <ListFilter strokeWidth={1.25} />
-        </div>
+        </div> */}
       </div>
-      {history.length ? (
+      {filteredHistory.length ? (
         <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
-          {history.map((item) => (
+          {filteredHistory.map((item) => (
             <TranscriptCard
               key={item.id}
               id={item.id}

@@ -13,7 +13,7 @@ const HomePage = () => {
           <ArrowRight />
         </Link>
       </div>
-      <div className="overflow-hidden flex items-start justify-center border rounded-r-full rounded-l-full h-[200vh] p-10 flex-1">
+      <div className="overflow-hidden flex items-center md:items-start justify-center md:border rounded-r-full rounded-l-full h-full md:h-[200vh] p-10 flex-1">
         <ImageCarousel />
       </div>
     </div>

@@ -4,6 +4,7 @@ import { ChevronLeftIcon, Mic, NotepadText, Podcast } from 'lucide-react';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,23 @@ const Layout = ({ children }: LayoutProps) => {
     // Call the onListening function
     onListening();
   };
+
+  useEffect(() => {
+    if (pathname == '/converter') {
+      if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+        navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then(() => {
+            console.log('microphone has been connected');
+          })
+          .catch(() => {
+            alert('you need to enable your microphone');
+          });
+      } else {
+        alert('SpeechAPI isnt supported');
+      }
+    }
+  }, [pathname]);
 
   return (
     <div className="w-full px-4 md:w-[70%] py-10 mx-auto space-y-8">

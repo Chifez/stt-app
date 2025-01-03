@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useAudioContext } from '../context/audiofilecontext/useAudioFile';
 
 const useConverter = () => {
   const [transcript, setTranscript] = useState('');
@@ -7,16 +8,40 @@ const useConverter = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(0);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  // const [audioFile, setAudioFile] = useState<File | null>(null);
+
+  const { audioFile, setAudioFile } = useAudioContext();
 
   const recongitionRef = useRef(null);
+
+  const processAudioFile = async (file: File) => {
+    // Example of processing the audio file
+    const reader = new FileReader();
+    reader.readAsArrayBuffer(file);
+    reader.onload = async () => {
+      const audioBuffer = reader.result;
+      // Add audio processing logic here (e.g., transcribe or analyze the audio)
+      console.log('Audio buffer:', audioBuffer);
+    };
+    reader.onerror = (error) => {
+      console.error('Failed to read file:', error);
+    };
+  };
 
   /**
    * @function convertToText
    * @description Continuously listens for speech and streams the results
    * @returns {void}
    */
-  const convertToText = () => {
+  const convertToText = async () => {
     if (isListening == true) return;
+    if (audioFile) {
+      // Process the selected audio file
+      await processAudioFile(audioFile);
+      setAudioFile(null); // Clear the file after processing
+      return;
+    }
+
     if (window.SpeechRecognition || window.webkitSpeechRecognition) {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -147,15 +172,16 @@ const useConverter = () => {
   return {
     transcript,
     interimTranscript,
-    setTranscript,
     isListening,
+    isSpeaking,
+    speakingIndex,
+    speakingId,
+    setTranscript,
     setisListening,
     stopListening,
     convertToText,
     convertToSpeech,
-    isSpeaking,
-    speakingIndex,
-    speakingId,
+    setAudioFile,
   };
 };
 export default useConverter;

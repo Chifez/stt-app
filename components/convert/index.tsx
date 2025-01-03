@@ -16,6 +16,7 @@ import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
 import ShareTranscript from '../shared/shareTranscript';
 import EditableContent from '../shared/EditableContent';
+import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);

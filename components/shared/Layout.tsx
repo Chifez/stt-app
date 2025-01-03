@@ -5,12 +5,15 @@ import useConverter from '@/lib/utils/hooks/useConverter';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useAudioContext } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const { setAudioFile } = useAudioContext();
+
   const { convertToText: onListening } = useConverter();
   const router = useRouter();
   const pathname = usePathname();
@@ -22,6 +25,19 @@ const Layout = ({ children }: LayoutProps) => {
     }
     // Call the onListening function
     onListening();
+  };
+
+  const getAudioFile = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*';
+
+    input.onchange = async (event: any) => {
+      const file = event.target.Files[0];
+      // const audioBlob =  new Blob([file], {type:file.type})
+      setAudioFile(file);
+    };
+    input.click();
   };
 
   useEffect(() => {
@@ -53,7 +69,11 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/converter" className="cursor-pointer">
+          <Link
+            href="/converter"
+            className="cursor-pointer"
+            onClick={getAudioFile}
+          >
             <Podcast strokeWidth={1.25} />
           </Link>
           <Link href="/converter" className="cursor-pointer">
@@ -67,7 +87,6 @@ const Layout = ({ children }: LayoutProps) => {
           </Link>
         </div>
       </nav>
-
       {children}
     </div>
   );

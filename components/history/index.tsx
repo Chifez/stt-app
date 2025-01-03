@@ -13,6 +13,7 @@ import TranscriptCard from '../shared/TranscriptCard';
 import { ListFilter, Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import Link from 'next/link';
+import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 
 interface Transcript {
   id: string;

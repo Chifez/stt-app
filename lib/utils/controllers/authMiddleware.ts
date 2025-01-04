@@ -1,17 +1,15 @@
-// import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
-// export function verifyToken(req, res) {
-//   const authHeader = req.headers.authorization;
+export function signToken(user: { id: any; name: string; email: string }) {
+  return jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
+    expiresIn: '1h',
+  });
+}
 
-//   if (!authHeader || !authHeader.startsWith('Bearer '))
-//     return res.status(401).json({ error: 'Unauthorized access' });
-
-//   const token = authHeader.split(' ')[1];
-
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-//     return decoded.userId;
-//   } catch (err) {
-//     return res.status(401).json({ error: 'Invalid token' });
-//   }
-// }
+export function verifyToken(token: string) {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET!);
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+}

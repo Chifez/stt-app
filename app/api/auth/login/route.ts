@@ -3,6 +3,7 @@ import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import { User } from '@/lib/models/user';
+import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 dbConnect();
 
@@ -30,9 +31,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
     };
 
-    const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET!, {
-      expiresIn: '1d',
-    });
+    const token = await signToken(tokenData);
 
     const response = NextResponse.json({
       message: 'Login successful',

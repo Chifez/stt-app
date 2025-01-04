@@ -1,5 +1,46 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import bcryptjs from 'bcryptjs';
+import dbConnect from '@/lib/utils/controllers/dbConnect';
+import { User } from '@/lib/models/user';
 
-export async function GET() {
-  return NextResponse.json({ hello: 'world' });
+dbConnect();
+
+export async function POST(request: NextRequest) {
+  try {
+    const reqBody = await request.json();
+    const { name, email, password } = reqBody;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User already exists' },
+        { status: 400 }
+      );
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    const savedUser = await newUser.save();
+
+    // const verificationToken = await bcryptjs.hash(savedUser._id.toString(), 10);
+
+    // const templateName = “verification_template.html”;
+    // const subject = “Email Verification”;
+    // await sendEmail(email, subject, { verificationLink: `${process.env.DOMAIN}/verifyemail?token=${verificationToken}` }, templateName);
+
+    return NextResponse.json({
+      message: 'User created successfully. Verification email sent.',
+      success: true,
+      savedUser,
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

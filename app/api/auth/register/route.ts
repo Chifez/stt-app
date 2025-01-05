@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import User from '@/lib/models/user';
+import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 dbConnect();
 
@@ -27,9 +28,11 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
     });
 
+    const token = await signToken(newUser);
+
     const savedUser = await newUser.save();
 
-    // const verificationToken = await bcryptjs.hash(savedUser._id.toString(), 10);
+    const verificationToken = await bcrypt.hash(savedUser._id.toString(), 10);
 
     // const templateName = “verification_template.html”;
     // const subject = “Email Verification”;
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'User created successfully. Verification email sent.',
       success: true,
-      user: others,
+      user: { ...others, token },
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

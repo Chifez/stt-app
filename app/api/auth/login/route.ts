@@ -4,9 +4,10 @@ import dbConnect from '@/lib/utils/controllers/dbConnect';
 import User from '@/lib/models/user';
 import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
-dbConnect();
+// dbConnect();
 
 export async function POST(request: NextRequest) {
+  await dbConnect();
   try {
     const reqBody = await request.json();
     const { email, password } = reqBody;
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       message: 'Login successful',
       success: true,
+      token: token,
     });
     response.cookies.set('token', token, {
       httpOnly: true,

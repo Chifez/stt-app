@@ -5,14 +5,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 dbConnect();
 
-export async function GET(req: NextRequest) {
-  const token = req.headers.get('authorization')?.split(' ')[1];
-  const { id: userId } = verifyToken(token!);
-
-  const transcript = await Transcript.find({ userId }).sort({ createdAt: -1 });
-  return new Response(JSON.stringify({ transcript }), { status: 200 });
-}
-
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
   const { id: userId } = verifyToken(token!);
@@ -26,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   const newTranscript = await Transcript.create({ userId, text });
   return NextResponse.json(
-    { message: 'History saved successfully', newTranscript },
+    { message: 'traanscript saved successfully', newTranscript },
     { status: 201 }
   );
 }

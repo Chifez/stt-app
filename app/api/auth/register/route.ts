@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcryptjs from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
-import { User } from '@/lib/models/user';
+import User from '@/lib/models/user';
 
 dbConnect();
 
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
       name,
@@ -35,10 +35,11 @@ export async function POST(request: NextRequest) {
     // const subject = “Email Verification”;
     // await sendEmail(email, subject, { verificationLink: `${process.env.DOMAIN}/verifyemail?token=${verificationToken}` }, templateName);
 
+    const { password: _, ...others } = savedUser._doc;
     return NextResponse.json({
       message: 'User created successfully. Verification email sent.',
       success: true,
-      savedUser,
+      user: others,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -5,11 +5,20 @@ export interface IUser extends Document {
   email: string;
   password: string;
   isVerified: boolean;
-  //   forgotpasswordtoken: string;
-  //   forgotpasswordtokenexpiry: Date;
-  //   verifytoken: string;
-  //   verifytokenexpiry: Date;
 }
+
+const validator = {
+  isEmail: (value: string): boolean => {
+    const emailregex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailregex.test(value);
+  },
+  isPasswordValid: (password: string): boolean => {
+    // Example criteria: at least 6 characters, at least one uppercase letter, one lowercase letter, one number, and one special character
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return passwordRegex.test(password);
+  },
+};
 
 const userSchema: Schema = new mongoose.Schema({
   name: {
@@ -18,31 +27,38 @@ const userSchema: Schema = new mongoose.Schema({
   },
   email: {
     type: String,
-    unique: true,
     required: true,
+    unique: true,
+    lowercase: true,
+    validate: {
+      validator: (value: string) => {
+        return validator.isEmail(value);
+      },
+      message: 'Please use a valid email',
+    },
   },
   password: {
     type: String,
-    length: 5,
+    length: 6,
     required: true,
+    validate: {
+      validator: (value: string) => {
+        return validator.isPasswordValid(value);
+      },
+      message: 'Please use a valid password',
+    },
   },
   isVerified: {
     type: Boolean,
     default: false,
   },
-  //   forgotpasswordtoken: {
-  //     type: String,
-  //   },
-
-  //   forgotpasswordtokenexpiry: {
-  //     type: Date,
-  //   },
-  //   verifytoken: {
-  //     type: String,
-  //   },
-  //   verifytokenexpiry: {
-  //     type: Date,
-  //   },
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+const User =
+  mongoose.models.users || mongoose.model<IUser>('users', userSchema);
+
+export default User;
+
+// const User = mongoose.model<IUser>('user', userSchema);
+
+// export default User;

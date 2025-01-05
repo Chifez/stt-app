@@ -16,7 +16,10 @@ const TranscriptSchema: Schema = new mongoose.Schema({
   },
 });
 
-export const Transcript = mongoose.model<ITranscript>(
-  'Transcript',
-  TranscriptSchema
-);
+const Transcript =
+  mongoose.models.transcript ||
+  mongoose.model<ITranscript>('transcript', TranscriptSchema);
+
+// const Transcript = mongoose.model<ITranscript>('transcript', TranscriptSchema);
+
+export default Transcript;

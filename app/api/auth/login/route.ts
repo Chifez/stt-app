@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcryptjs from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
-import { User } from '@/lib/models/user';
+import User from '@/lib/models/user';
 import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 dbConnect();
@@ -20,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validPassword = await bcryptjs.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 400 });
     }

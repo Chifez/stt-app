@@ -1,4 +1,4 @@
-import { User } from '@/lib/models/user';
+import User from '@/lib/models/user';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import { NextRequest, NextResponse } from 'next/server';
 

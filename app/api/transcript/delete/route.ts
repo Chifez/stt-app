@@ -1,9 +1,22 @@
-import { NextResponse } from 'next/server';
+import Transcript from '@/lib/models/transcript';
+import { verifyToken } from '@/lib/utils/controllers/authMiddleware';
+import { error } from 'console';
+import { NextRequest, NextResponse } from 'next/server';
 
-// export async function DELETE() {
-//   return NextResponse.json({ hello: 'world' });
-// }
+export async function DELETE(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get('id');
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const user = await verifyToken(token!);
 
-export async function GET() {
-  return NextResponse.json({ hello: 'world' });
+  if (!user) {
+    return NextResponse.json({ error: 'Invalid token' }), { status: 401 };
+  }
+  if (!id) {
+    return NextResponse.json({ error: 'Invalid id' }), { status: 401 };
+  }
+  await Transcript.findByIdAndDelete({ id });
+  return NextResponse.json(
+    { message: 'Transcript deleted successfully' },
+    { status: 200 }
+  );
 }

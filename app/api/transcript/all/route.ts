@@ -7,10 +7,19 @@ dbConnect();
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
-  const session = await verifyToken(token!);
+  const user = await verifyToken(token!);
 
-  const { id: userId } = session;
+  if (!user) {
+    return (
+      NextResponse.json({ error: 'Invalid token' }),
+      {
+        status: 401,
+      }
+    );
+  }
 
-  const transcript = await Transcript.find({ userId }).sort({ createdAt: -1 });
-  return new Response(JSON.stringify({ transcript }), { status: 200 });
+  const transcript = await Transcript.find({ userId: user.id }).sort({
+    createdAt: -1,
+  });
+  return NextResponse.json({ transcript }, { status: 200 });
 }

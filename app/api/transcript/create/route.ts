@@ -7,18 +7,30 @@ dbConnect();
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
-  const { id: userId } = verifyToken(token!);
+  const user = await verifyToken(token!);
+
+  if (!user) {
+    return (
+      NextResponse.json({ error: 'Invalid token' }),
+      {
+        status: 401,
+      }
+    );
+  }
   const { text } = await req.json();
 
   if (!text) {
-    return new Response(JSON.stringify({ error: 'Text is required' }), {
-      status: 400,
-    });
+    return (
+      NextResponse.json({ error: 'Text is required' }),
+      {
+        status: 400,
+      }
+    );
   }
 
-  const newTranscript = await Transcript.create({ userId, text });
+  const newTranscript = await Transcript.create({ userId: user.id, text });
   return NextResponse.json(
-    { message: 'traanscript saved successfully', newTranscript },
+    { message: 'History saved successfully', newTranscript },
     { status: 201 }
   );
 }

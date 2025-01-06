@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-interface TokenData {
+export interface TokenData {
   id: any;
   name: string;
   email: string;

@@ -1,6 +1,5 @@
 import Transcript from '@/lib/models/transcript';
 import { verifyToken } from '@/lib/utils/controllers/authMiddleware';
-import { error } from 'console';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(req: NextRequest) {

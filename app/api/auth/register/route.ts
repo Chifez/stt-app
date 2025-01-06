@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import User from '@/lib/models/user';
-import {
-  createSession,
-  signToken,
-} from '@/lib/utils/controllers/authMiddleware';
-import { cookies } from 'next/headers';
+import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 dbConnect();
 

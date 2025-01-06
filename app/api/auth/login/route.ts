@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import User from '@/lib/models/user';
-import {
-  createSession,
-  signToken,
-} from '@/lib/utils/controllers/authMiddleware';
+import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 // dbConnect();
 
@@ -34,7 +31,6 @@ export async function POST(request: NextRequest) {
       email: user.email,
     };
 
-    console.log('tokendata', tokenData);
     const token = await signToken(tokenData);
 
     const response = NextResponse.json({

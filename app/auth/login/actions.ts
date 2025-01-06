@@ -2,6 +2,8 @@
 
 import { z } from 'zod';
 import { cookies } from 'next/headers';
+import { createSession } from '@/lib/utils/controllers/authMiddleware';
+import { redirect } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -27,31 +29,21 @@ export async function login(prevState: any, formData: FormData) {
     return { error: errors.join(', ') };
   }
 
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validatedFields.data),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { error: data.error || 'Login failed' };
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validatedFields.data),
     }
+  );
 
-    (await cookies()).set(
-      'user',
-      JSON.stringify({ email: validatedFields.data.email }),
-      { httpOnly: true }
-    );
+  const data = await response.json();
 
-    return { success: true, message: 'Login successful' };
-  } catch (error) {
-    console.error('Login error:', error);
-    return { error: 'An unexpected error occurred' };
+  if (!response.ok) {
+    return { error: data.error || 'Login failed' };
   }
+  console.log('token here 2', data.token);
+  await createSession(data.token);
+  redirect('/converter');
 }

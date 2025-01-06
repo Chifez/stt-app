@@ -10,9 +10,10 @@ import { register } from './actions';
 import { useActionState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+import SubmitButton from '@/components/shared/SubmitButton';
 
 export default function RegisterPage() {
-  const [state, formAction] = useActionState(register, null);
+  const [state, formAction] = useActionState(register, undefined);
   const { pending } = useFormStatus();
   const router = useRouter();
   const { toast } = useToast();
@@ -62,16 +63,7 @@ export default function RegisterPage() {
           />
         </div>
         {state?.error && <p className="text-red-500">{state.error}</p>}
-        <Button className="w-full" type="submit" disabled={pending}>
-          {pending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Registering...
-            </>
-          ) : (
-            'Create account'
-          )}
-        </Button>
+        <SubmitButton label="loading...">Register</SubmitButton>
       </form>
     </div>
   );

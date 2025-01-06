@@ -7,7 +7,9 @@ dbConnect();
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get('authorization')?.split(' ')[1];
-  const { id: userId } = verifyToken(token!);
+  const session = await verifyToken(token!);
+
+  const { id: userId } = session;
 
   const transcript = await Transcript.find({ userId }).sort({ createdAt: -1 });
   return new Response(JSON.stringify({ transcript }), { status: 200 });

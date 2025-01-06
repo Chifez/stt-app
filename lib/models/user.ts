@@ -39,14 +39,13 @@ const userSchema: Schema = new mongoose.Schema({
   },
   password: {
     type: String,
-    length: 6,
     required: true,
-    validate: {
-      validator: (value: string) => {
-        return validator.isPasswordValid(value);
-      },
-      message: 'Please use a valid password',
-    },
+    // validate: {
+    //   validator: (value: string) => {
+    //     return validator.isPasswordValid(value);
+    //   },
+    //   message: 'Please use a valid password',
+    // },
   },
   isVerified: {
     type: Boolean,

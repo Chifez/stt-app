@@ -2,6 +2,8 @@
 
 import { z } from 'zod';
 import { cookies } from 'next/headers';
+import { createSession } from '@/lib/utils/controllers/authMiddleware';
+import { redirect } from 'next/navigation';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -23,40 +25,31 @@ export async function register(prevState: any, formData: FormData) {
   }
 
   const validatedFields = registerSchema.safeParse({ name, email, password });
+  console.log(validatedFields.data);
 
   if (!validatedFields.success) {
-    const errors = validatedFields.error.errors.map((error) => error.message);
-    return { error: errors.join(', ') };
-  }
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validatedFields.data),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { error: data.error || 'Registration failed' };
-    }
-
-    (await cookies()).set(
-      'user',
-      JSON.stringify({ name: data.user.name, email: data.user.email }),
-      { httpOnly: true }
-    );
-
+    // const errors = validatedFields.error.errors.map((error) => error.message);
+    // return { error: errors.join(', ') };
     return {
-      success: true,
-      message: data.message || 'Registration successful',
+      errors: validatedFields.error.flatten().fieldErrors,
     };
-  } catch (error) {
-    console.error('Registration error:', error);
-    return { error: 'An unexpected error occurred' };
   }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validatedFields.data),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return { error: data.error || 'Registration failed' };
+  }
+  console.log('token here 3', data.token);
+  await createSession(data.token);
+  redirect('/converter');
 }

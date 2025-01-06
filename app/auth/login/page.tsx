@@ -8,11 +8,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { login } from './actions';
 import { useActionState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useFormStatus } from 'react-dom';
+import SubmitButton from '@/components/shared/SubmitButton';
 
 export default function LoginPage() {
   const [state, formAction] = useActionState(login, null);
-  const { pending } = useFormStatus();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -57,16 +57,7 @@ export default function LoginPage() {
           />
         </div>
         {state?.error && <p className="text-red-500">{state.error}</p>}
-        <Button className="w-full" type="submit" disabled={pending}>
-          {pending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Logging in...
-            </>
-          ) : (
-            'Login'
-          )}
-        </Button>
+        <SubmitButton label="loading...">Login</SubmitButton>
       </form>
     </div>
   );

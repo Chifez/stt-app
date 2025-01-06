@@ -1,4 +1,5 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
 
 interface TokenData {
   id: any;
@@ -6,17 +7,31 @@ interface TokenData {
   email: string;
 }
 
-export function signToken(user: TokenData) {
-  return jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
-    expiresIn: '1h',
-  });
+const secret = process.env.JWT_SECRET;
+
+export async function createSession(token: string) {
+  (await cookies()).set('session', token, { httpOnly: true });
 }
 
-export function verifyToken(token: string): TokenData {
+export async function signToken(user: TokenData) {
+  return new SignJWT({ ...user })
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+    .setExpirationTime('7d')
+    .setIssuedAt()
+    .sign(new TextEncoder().encode(secret));
+}
+
+export async function verifyToken(
+  token: string
+): Promise<TokenData | undefined> {
   try {
-    console.log(jwt.verify(token, process.env.JWT_SECRET!));
-    return jwt.verify(token, process.env.JWT_SECRET!) as TokenData;
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(secret)
+    );
+    // if its all good, return it, or perhaps just return a boolean
+    return payload as unknown as TokenData;
   } catch (error) {
-    throw new Error('Invalid token');
+    console.log('failed to verify the token or invalid token');
   }
 }

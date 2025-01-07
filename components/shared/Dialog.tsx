@@ -15,46 +15,23 @@ import { useToast } from '@/hooks/use-toast';
 import { DialogClose } from '@radix-ui/react-dialog';
 
 import { Save } from 'lucide-react';
+import { useCreateTranscript } from '@/lib/utils/hooks/useCreateTranscript';
 
-interface DialogProps {
-  transcript: string;
-}
-
-export function SaveDialog({ transcript }: DialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function SaveDialog({
+  transcript,
+  setTranscript,
+}: {
+  transcript: string | any;
+  setTranscript: (transcript: string | any) => void;
+}) {
   const [open, setOpen] = useState(false);
-  const { toast } = useToast();
+  const { mutate, isPending, isError, isSuccess } = useCreateTranscript(
+    setTranscript,
+    setOpen
+  );
 
   const handleSave = () => {
-    setIsLoading(true);
-
-    try {
-      const savedTranscripts = JSON.parse(
-        localStorage.getItem('transcripts') || '[]'
-      );
-
-      const newTranscript = {
-        id: Date.now(),
-        text: transcript,
-        date: new Date().toISOString(),
-      };
-      savedTranscripts.push(newTranscript);
-      localStorage.setItem('transcripts', JSON.stringify(savedTranscripts));
-
-      setOpen(false); // Close dialog after successful save
-      toast({
-        description: 'Transcript Saved successfully',
-      });
-    } catch (error) {
-      console.log(error);
-
-      console.log('error saving');
-      toast({
-        description: 'error saving transcript',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    mutate(transcript);
   };
 
   // Don't allow opening dialog if transcript is empty
@@ -87,7 +64,7 @@ export function SaveDialog({ transcript }: DialogProps) {
 
         <DialogFooter className="gap-2">
           <Button onClick={handleSave} className="bg-blue-500">
-            {isLoading ? 'Saving..' : 'Save'}
+            {isPending ? 'Saving..' : 'Save'}
           </Button>
 
           {/* <DialogClose>

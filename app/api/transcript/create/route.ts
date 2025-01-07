@@ -6,31 +6,28 @@ import { NextRequest, NextResponse } from 'next/server';
 dbConnect();
 
 export async function POST(req: NextRequest) {
-  const token = req.headers.get('authorization')?.split(' ')[1];
-  const user = await verifyToken(token!);
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    const user = await verifyToken(token!);
 
-  if (!user) {
-    return (
-      NextResponse.json({ error: 'Invalid token' }),
-      {
-        status: 401,
-      }
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const { text } = await req.json();
+
+    if (!text) {
+      return NextResponse.json({ error: 'Text is required' }, { status: 400 });
+    }
+
+    console.log('user from backend', user);
+    const newTranscript = await Transcript.create({ userId: user.id, text });
+    console.log('newTranscript', newTranscript);
+    return NextResponse.json({ data: newTranscript }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
     );
   }
-  const { text } = await req.json();
-
-  if (!text) {
-    return (
-      NextResponse.json({ error: 'Text is required' }),
-      {
-        status: 400,
-      }
-    );
-  }
-
-  const newTranscript = await Transcript.create({ userId: user.id, text });
-  return NextResponse.json(
-    { message: 'History saved successfully', newTranscript },
-    { status: 201 }
-  );
 }

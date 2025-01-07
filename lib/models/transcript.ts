@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface ITranscript extends Document {
   text: string;
   tags?: string[];
+  userId: string;
 }
 
 const TranscriptSchema: Schema = new mongoose.Schema({
@@ -13,6 +14,10 @@ const TranscriptSchema: Schema = new mongoose.Schema({
   tags: {
     type: [String],
     required: false,
+  },
+  userId: {
+    type: String,
+    required: true,
   },
 });
 

@@ -16,7 +16,6 @@ import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
 import ShareTranscript from '../shared/shareTranscript';
 import EditableContent from '../shared/EditableContent';
-import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);
@@ -57,7 +56,7 @@ const Convert = () => {
           >
             <Copy size={16} strokeWidth={1.25} />
           </span>
-          <SaveDialog transcript={transcript} />
+          <SaveDialog transcript={transcript} setTranscript={setTranscript} />
           <ShareTranscript
             text={transcript}
             bgColor="bg-blue-300"

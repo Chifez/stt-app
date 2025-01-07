@@ -14,9 +14,10 @@ import { ListFilter, Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import Link from 'next/link';
 import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
+import { useTranscripts } from '@/lib/utils/hooks/useFetchTranscript';
 
 interface Transcript {
-  id: string;
+  _id: string;
   text: string;
   date: string;
 }
@@ -32,22 +33,19 @@ const HistoryPage = () => {
   const [cardColors, setCardColors] = useState<Record<string, string>>({});
   const [searchValue, setSearchValue] = useState<string>('');
 
+  const { data, isFetching, error } = useTranscripts();
+
+  console.log('data', data);
+
   const { convertToSpeech, isSpeaking, speakingIndex, speakingId } =
     useConverter();
-
-  const filteredHistory = useMemo(() => {
-    if (!searchValue) return history;
-    return history.filter((item) =>
-      item.text.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [history, searchValue]);
 
   // Memoize the color generation function
   const generateColorMap = useCallback((transcripts: Transcript[]) => {
     const newColors: Record<string, string> = {};
-    transcripts.forEach((transcript) => {
-      if (!cardColors[transcript.id]) {
-        newColors[transcript.id] =
+    transcripts?.forEach((transcript) => {
+      if (!cardColors[transcript._id]) {
+        newColors[transcript._id] =
           BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
       }
     });
@@ -55,21 +53,10 @@ const HistoryPage = () => {
   }, []);
 
   // Memoize the load history function
-  const loadHistory = useCallback(() => {
-    const savedTranscripts = localStorage.getItem('transcripts');
-    if (savedTranscripts) {
-      const parsedTranscripts: Transcript[] = JSON.parse(savedTranscripts);
-      const sortedTranscripts = parsedTranscripts.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      setHistory(sortedTranscripts);
-      setCardColors(generateColorMap(sortedTranscripts));
-    }
-  }, []);
 
   const handleDelete = (id: string) => {
     deleteTranscript(id);
-    loadHistory();
+    // loadHistory();
   };
 
   // Memoize the speak handler
@@ -85,16 +72,32 @@ const HistoryPage = () => {
     if (savedTranscripts) {
       const transcripts = JSON.parse(savedTranscripts);
       const updatedTranscripts = transcripts.map((t: Transcript) =>
-        t.id === id ? { ...t, text: newText } : t
+        t._id === id ? { ...t, text: newText } : t
       );
       localStorage.setItem('transcripts', JSON.stringify(updatedTranscripts));
-      loadHistory();
+      // loadHistory();
     }
   };
 
-  useEffect(() => {
-    loadHistory();
-  }, []);
+  const filteredHistory = useMemo(() => {
+    if (!searchValue) {
+      setHistory(data?.transcript);
+      setCardColors(generateColorMap(data?.transcript));
+      return data?.transcript;
+    }
+    const filteredList = data.transcript.filter((item: Transcript) =>
+      item.text.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    return setHistory(filteredList);
+  }, [data, searchValue]);
+
+  if (isFetching) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading transcripts</div>;
+  }
 
   return (
     <>
@@ -118,12 +121,11 @@ const HistoryPage = () => {
       </div>
       {filteredHistory.length ? (
         <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
-          {filteredHistory.map((item) => (
+          {filteredHistory.map((item: Transcript) => (
             <TranscriptCard
-              key={item.id}
-              id={item.id}
+              id={item._id}
               text={item.text}
-              bgColor={cardColors[item.id]}
+              bgColor={cardColors[item._id]}
               isSpeaking={isSpeaking}
               speakingIndex={speakingIndex}
               speakingId={speakingId}

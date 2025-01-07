@@ -20,6 +20,7 @@ interface TranscriptCardProps {
 const TranscriptCard = memo(
   ({
     id,
+
     text,
     bgColor,
     isSpeaking,
@@ -58,6 +59,7 @@ const TranscriptCard = memo(
 
     return (
       <Card
+        key={id}
         ref={cardRef}
         className={`w-full h-fit rounded-lg p-4 break-inside-avoid overflow-visible ${bgColor}`}
       >

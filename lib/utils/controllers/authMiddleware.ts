@@ -15,7 +15,7 @@ export async function createSession(token: string) {
 
 export async function signToken(user: TokenData) {
   return new SignJWT({ ...user })
-    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+    .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .setIssuedAt()
     .sign(new TextEncoder().encode(secret));
@@ -32,6 +32,7 @@ export async function verifyToken(
     // if its all good, return it, or perhaps just return a boolean
     return payload as unknown as TokenData;
   } catch (error) {
-    console.log('failed to verify the token or invalid token');
+    console.log('failed to verify the token or invalid token', error);
+    throw error;
   }
 }

@@ -1,7 +1,6 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 
 export const createTranscript = async (transcriptData: any) => {
   const token = (await cookies()).get('session');
@@ -117,3 +116,25 @@ export const deleteTranscripts = async (id: string) => {
   console.log('list', responseData);
   return responseData;
 };
+
+export async function getUserProfile() {
+  const token = (await cookies()).get('session');
+
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`, {
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to get transcript');
+  }
+  const responseData = await response.json();
+  console.log('list', responseData);
+  return responseData;
+}

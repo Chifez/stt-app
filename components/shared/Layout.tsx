@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useAudioContext } from '@/lib/utils/context/audiofilecontext/useAudioFile';
+import { useGetProfile } from '@/lib/utils/hooks/useUserProfile';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,8 +16,12 @@ const Layout = ({ children }: LayoutProps) => {
   const { setAudioFile } = useAudioContext();
 
   const { convertToText: onListening } = useConverter();
+
+  const { data } = useGetProfile();
   const router = useRouter();
   const pathname = usePathname();
+
+  console.log('user', data);
 
   const goToConverter = () => {
     if (pathname !== '/converter') {
@@ -59,6 +64,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="w-full px-4 md:w-[70%] py-10 mx-auto space-y-8">
+      <p>Hello, {data?.profile.name || 'There'}</p>
       <nav className="flex items-center justify-between">
         <div
           className="flex items-center justify-center gap-1 cursor-pointer"

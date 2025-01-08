@@ -17,6 +17,7 @@ export async function login(prevState: any, formData: FormData) {
 
   const email = formData.get('email');
   const password = formData.get('password');
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!email || !password) {
     return { error: 'Email and password are required' };
@@ -29,14 +30,11 @@ export async function login(prevState: any, formData: FormData) {
     return { error: errors.join(', ') };
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(validatedFields.data),
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(validatedFields.data),
+  });
 
   const data = await response.json();
 

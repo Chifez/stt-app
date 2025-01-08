@@ -2,6 +2,8 @@
 
 import { cookies } from 'next/headers';
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export const createTranscript = async (transcriptData: any) => {
   const token = (await cookies()).get('session');
 
@@ -9,17 +11,14 @@ export const createTranscript = async (transcriptData: any) => {
     throw new Error('No token found');
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/transcript/create`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.value}`,
-      },
-      body: JSON.stringify({ text: transcriptData }),
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/transcript/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token.value}`,
+    },
+    body: JSON.stringify({ text: transcriptData }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -39,14 +38,11 @@ export const getTranscripts = async () => {
     throw new Error('No token found');
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/transcript/all`,
-    {
-      headers: {
-        Authorization: `Bearer ${token.value}`,
-      },
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/transcript/all`, {
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -70,17 +66,14 @@ export const updateTranscripts = async ({
     throw new Error('No token found');
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/transcript/update?id=${id}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.value}`,
-      },
-      body: JSON.stringify({ text: newText }),
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/transcript/update?id=${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token.value}`,
+    },
+    body: JSON.stringify({ text: newText }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -98,15 +91,12 @@ export const deleteTranscripts = async (id: string) => {
     throw new Error('No token found');
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/transcript/delete?id=${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token.value}`,
-      },
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/transcript/delete?id=${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token.value}`,
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -124,7 +114,7 @@ export async function getUserProfile() {
     throw new Error('No token found');
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`, {
+  const response = await fetch(`${baseUrl}/api/user`, {
     headers: {
       Authorization: `Bearer ${token.value}`,
     },

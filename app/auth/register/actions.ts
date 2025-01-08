@@ -19,6 +19,7 @@ export async function register(prevState: any, formData: FormData) {
   const name = formData.get('name');
   const email = formData.get('email');
   const password = formData.get('password');
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!name || !email || !password) {
     return { error: 'All fields are required' };
@@ -35,14 +36,11 @@ export async function register(prevState: any, formData: FormData) {
     };
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(validatedFields.data),
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(validatedFields.data),
+  });
 
   const data = await response.json();
 

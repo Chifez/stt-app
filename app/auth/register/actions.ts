@@ -24,6 +24,7 @@ export async function register(prevState: any, formData: FormData) {
   if (!name || !email || !password) {
     return { error: 'All fields are required' };
   }
+  console.log('baseURL', baseUrl);
 
   const validatedFields = registerSchema.safeParse({ name, email, password });
   console.log(validatedFields.data);

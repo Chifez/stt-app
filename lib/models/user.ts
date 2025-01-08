@@ -20,44 +20,43 @@ const validator = {
   },
 };
 
-const userSchema: Schema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    validate: {
-      validator: (value: string) => {
-        return validator.isEmail(value);
+const userSchema: Schema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      validate: {
+        validator: (value: string) => {
+          return validator.isEmail(value);
+        },
+        message: 'Please use a valid email',
       },
-      message: 'Please use a valid email',
+    },
+    password: {
+      type: String,
+      required: true,
+      // validate: {
+      //   validator: (value: string) => {
+      //     return validator.isPasswordValid(value);
+      //   },
+      //   message: 'Please use a valid password',
+      // },
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
-  password: {
-    type: String,
-    required: true,
-    // validate: {
-    //   validator: (value: string) => {
-    //     return validator.isPasswordValid(value);
-    //   },
-    //   message: 'Please use a valid password',
-    // },
-  },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-});
+  { timestamps: true }
+);
 
 const User =
   mongoose.models.users || mongoose.model<IUser>('users', userSchema);
 
 export default User;
-
-// const User = mongoose.model<IUser>('user', userSchema);
-
-// export default User;

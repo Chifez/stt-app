@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   }
 
   const transcript = await Transcript.find({ userId: user.id }).sort({
-    createdAt: -1,
+    createdAt: 1,
   });
   return NextResponse.json({ transcript }, { status: 200 });
 }

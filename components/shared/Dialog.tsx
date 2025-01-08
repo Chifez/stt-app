@@ -11,8 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { DialogClose } from '@radix-ui/react-dialog';
 
 import { Save } from 'lucide-react';
 import { useCreateTranscript } from '@/lib/utils/hooks/useCreateTranscript';
@@ -25,10 +23,7 @@ export function SaveDialog({
   setTranscript: (transcript: string | any) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const { mutate, isPending, isError, isSuccess } = useCreateTranscript(
-    setTranscript,
-    setOpen
-  );
+  const { mutate, isPending } = useCreateTranscript(setTranscript, setOpen);
 
   const handleSave = () => {
     mutate(transcript);
@@ -66,10 +61,6 @@ export function SaveDialog({
           <Button onClick={handleSave} className="bg-blue-500">
             {isPending ? 'Saving..' : 'Save'}
           </Button>
-
-          {/* <DialogClose>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose> */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

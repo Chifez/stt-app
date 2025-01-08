@@ -20,7 +20,6 @@ interface TranscriptCardProps {
 const TranscriptCard = memo(
   ({
     id,
-
     text,
     bgColor,
     isSpeaking,

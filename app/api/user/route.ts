@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 dbConnect();
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<any> {
   const token = req.headers.get('authorization')?.split(' ')[1];
   const user = await verifyToken(token!);
 

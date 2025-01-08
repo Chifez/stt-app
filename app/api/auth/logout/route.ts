@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(): Promise<any> {
   try {
     const request = await NextResponse.json({
       message: 'logout succsefully',

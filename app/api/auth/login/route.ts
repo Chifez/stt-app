@@ -6,7 +6,7 @@ import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
 // dbConnect();
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<any> {
   await dbConnect();
   try {
     const reqBody = await request.json();

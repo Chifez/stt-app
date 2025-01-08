@@ -2,7 +2,7 @@ import Transcript from '@/lib/models/transcript';
 import { verifyToken } from '@/lib/utils/controllers/authMiddleware';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: NextRequest): Promise<any> {
   const id = req.nextUrl.searchParams.get('id');
   const token = req.headers.get('authorization')?.split(' ')[1];
   const user = await verifyToken(token!);

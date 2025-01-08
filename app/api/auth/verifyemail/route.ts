@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 dbConnect();
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<any> {
   try {
     const reqBody = await request.json();
     const { token, email } = reqBody;

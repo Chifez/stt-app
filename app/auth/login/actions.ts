@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
 import { redirect } from 'next/navigation';
+import { baseUrl } from '@/lib/utils/baseurl';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -17,7 +18,6 @@ export async function login(prevState: any, formData: FormData) {
 
   const email = formData.get('email');
   const password = formData.get('password');
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!email || !password) {
     return { error: 'Email and password are required' };

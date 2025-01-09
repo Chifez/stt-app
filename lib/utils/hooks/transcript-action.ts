@@ -1,8 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+import { baseUrl } from '../baseurl';
 
 export const createTranscript = async (transcriptData: any) => {
   const token = (await cookies()).get('session');

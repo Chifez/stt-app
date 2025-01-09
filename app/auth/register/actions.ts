@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
 import { redirect } from 'next/navigation';
+import { baseUrl } from '@/lib/utils/baseurl';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -19,7 +20,6 @@ export async function register(prevState: any, formData: FormData) {
   const name = formData.get('name');
   const email = formData.get('email');
   const password = formData.get('password');
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!name || !email || !password) {
     return { error: 'All fields are required' };

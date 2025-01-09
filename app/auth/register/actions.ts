@@ -12,6 +12,13 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+console.log(
+  'URLS',
+  process.env.VERCEL_URL,
+  process.env.NEXT_PUBLIC_VERCEL_URL,
+  process.env.NEXT_PUBLIC_API_URL,
+  baseUrl
+);
 export async function register(prevState: any, formData: FormData) {
   if (!formData) {
     return { error: 'Form data is missing' };

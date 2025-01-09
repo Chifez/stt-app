@@ -30,7 +30,7 @@ export async function login(prevState: any, formData: FormData) {
     return { error: errors.join(', ') };
   }
 
-  const response = await fetch(`${baseUrl}/api/auth/login`, {
+  const response = await fetch(`https://${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(validatedFields.data),

@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
-// import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
 import TranscriptCard from '../shared/TranscriptCard';
 import { ListFilter, Loader2, Search } from 'lucide-react';
 import { Input } from '../ui/input';

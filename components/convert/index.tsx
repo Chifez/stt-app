@@ -20,7 +20,7 @@ import { useRef, useEffect, useState } from 'react';
 
 import EditableContent from '../shared/EditableContent';
 import { useToast } from '@/hooks/use-toast';
-import ShareTranscript from '@/components/shared/ShareTranscript';
+import ShareTranscript from '../shared/ShareTranscript';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);

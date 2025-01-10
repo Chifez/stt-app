@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
 import { redirect } from 'next/navigation';
-import { baseUrl } from '@/lib/utils/baseurl';
+import { baseUrl } from '@/lib/utils/functions/helpers';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),

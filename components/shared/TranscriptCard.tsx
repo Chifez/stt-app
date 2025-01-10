@@ -1,9 +1,10 @@
 import { memo, useRef, useState } from 'react';
 import { Card, CardContent, CardFooter } from '../ui/card';
 import { Copy, Trash, Volume2, Pencil } from 'lucide-react';
-import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
-import ShareTranscript from './shareTranscript';
+import { copyTranscript } from '@/lib/utils/functions/helpers';
+import ShareTranscript from './ShareTranscript';
 import EditableContent from './EditableContent';
+import { useToast } from '@/hooks/use-toast';
 
 interface TranscriptCardProps {
   id: string;
@@ -31,10 +32,18 @@ const TranscriptCard = memo(
   }: TranscriptCardProps) => {
     const [editing, setEditing] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
+    const { toast } = useToast();
 
     const toggleEdit = () => {
       if (!text) return;
       setEditing(!editing);
+    };
+
+    const handleCopy = () => {
+      copyTranscript(text);
+      return toast({
+        description: 'Copied sucessfully',
+      });
     };
 
     const highlightSpokenText = (text: string, index: number) => {
@@ -58,6 +67,7 @@ const TranscriptCard = memo(
 
     return (
       <Card
+        key={id}
         ref={cardRef}
         className={`w-full h-fit rounded-lg p-4 break-inside-avoid overflow-visible ${bgColor}`}
       >
@@ -85,7 +95,7 @@ const TranscriptCard = memo(
             strokeWidth={1.25}
             size={16}
             className="cursor-pointer"
-            onClick={() => copyTranscript(text)}
+            onClick={handleCopy}
           />
           <ShareTranscript text={text} bgColor={bgColor} cardRef={cardRef} />
           <Volume2

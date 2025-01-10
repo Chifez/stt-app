@@ -1,22 +1,19 @@
 'use client';
 
-import {
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useConverter from '@/lib/utils/hooks/useConverter';
-import { deleteTranscript } from '@/lib/utils/functions/deleteTranscript';
 import TranscriptCard from '../shared/TranscriptCard';
-import { ListFilter, Search } from 'lucide-react';
+import { ListFilter, Loader2, Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import Link from 'next/link';
-import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
+import { useGetTranscripts } from '@/lib/utils/hooks/useFetchTranscript';
+import { useUpdateTranscript } from '@/lib/utils/hooks/useUpdateTranscript';
+import { useDeleteTranscript } from '@/lib/utils/hooks/useDeleteTranscript';
+
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 
 interface Transcript {
-  id: string;
+  _id: string;
   text: string;
   date: string;
 }
@@ -32,44 +29,39 @@ const HistoryPage = () => {
   const [cardColors, setCardColors] = useState<Record<string, string>>({});
   const [searchValue, setSearchValue] = useState<string>('');
 
+  const { data, isLoading, isFetching, error } = useGetTranscripts();
+  const { mutate: updateTranscript, isPending: isUpdating } =
+    useUpdateTranscript();
+  const { mutate: deleteTranscript, isPending: isDeleting } =
+    useDeleteTranscript();
+
+  console.log('data', data);
+
   const { convertToSpeech, isSpeaking, speakingIndex, speakingId } =
     useConverter();
 
-  const filteredHistory = useMemo(() => {
-    if (!searchValue) return history;
-    return history.filter((item) =>
-      item.text.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [history, searchValue]);
+  /**
+   * @function generateColorMap
+   * @description generates a key value pair for the background colour of each transcript card
+   * @param accepts arrays of transcripts
+   * @returns an object with each transcript card mapped to a color code
+   */
 
-  // Memoize the color generation function
   const generateColorMap = useCallback((transcripts: Transcript[]) => {
     const newColors: Record<string, string> = {};
-    transcripts.forEach((transcript) => {
-      if (!cardColors[transcript.id]) {
-        newColors[transcript.id] =
+    transcripts?.forEach((transcript) => {
+      if (!cardColors[transcript._id]) {
+        newColors[transcript._id] =
           BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
       }
     });
     return (prev: Record<string, string>) => ({ ...prev, ...newColors });
   }, []);
 
-  // Memoize the load history function
-  const loadHistory = useCallback(() => {
-    const savedTranscripts = localStorage.getItem('transcripts');
-    if (savedTranscripts) {
-      const parsedTranscripts: Transcript[] = JSON.parse(savedTranscripts);
-      const sortedTranscripts = parsedTranscripts.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      setHistory(sortedTranscripts);
-      setCardColors(generateColorMap(sortedTranscripts));
-    }
-  }, []);
-
   const handleDelete = (id: string) => {
-    deleteTranscript(id);
-    loadHistory();
+    deleteTranscript(id, {
+      onSuccess: () => setHistory((prev) => prev.filter((t) => t._id !== id)),
+    });
   };
 
   // Memoize the speak handler
@@ -81,23 +73,50 @@ const HistoryPage = () => {
   );
 
   const handleEdit = (id: string, newText: string) => {
-    const savedTranscripts = localStorage.getItem('transcripts');
-    if (savedTranscripts) {
-      const transcripts = JSON.parse(savedTranscripts);
-      const updatedTranscripts = transcripts.map((t: Transcript) =>
-        t.id === id ? { ...t, text: newText } : t
-      );
-      localStorage.setItem('transcripts', JSON.stringify(updatedTranscripts));
-      loadHistory();
-    }
+    updateTranscript(
+      { id, newText },
+      {
+        onSuccess: () =>
+          setHistory((prev) =>
+            prev.map((t) => (t._id === id ? { ...t, text: newText } : t))
+          ),
+      }
+    );
   };
 
+  const filteredHistory = useMemo(() => {
+    if (!searchValue) return history;
+    return history.filter((item) =>
+      item.text.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [history, searchValue]);
+
   useEffect(() => {
-    loadHistory();
-  }, []);
+    if (data?.transcript) {
+      setHistory(data.transcript);
+      setCardColors(generateColorMap(data.transcript));
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading transcripts</div>;
+  }
 
   return (
     <>
+      <Dialog open={isDeleting || isUpdating}>
+        <DialogContent>
+          <DialogTitle>Loading</DialogTitle>
+          <div className="flex items-center gap-2">
+            <p>{isDeleting ? 'Deleting transcript' : 'Updating transcript'}</p>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="flex items-center justify-center gap-4 w-full">
         <div className="w-full  flex items-center justify-center">
           <div className="relative w-[90%] md:w-[60%] lg:w-[40%] flex items-center justify-center">
@@ -116,21 +135,22 @@ const HistoryPage = () => {
           <ListFilter strokeWidth={1.25} />
         </div> */}
       </div>
-      {filteredHistory.length ? (
+      {filteredHistory?.length > 0 ? (
         <div className="columns-1 md:columns-2 space-y-6 overflow-visible py-2">
-          {filteredHistory.map((item) => (
-            <TranscriptCard
-              key={item.id}
-              id={item.id}
-              text={item.text}
-              bgColor={cardColors[item.id]}
-              isSpeaking={isSpeaking}
-              speakingIndex={speakingIndex}
-              speakingId={speakingId}
-              onDelete={handleDelete}
-              onSpeak={handleSpeak}
-              onEdit={handleEdit}
-            />
+          {filteredHistory.map((item: Transcript) => (
+            <div key={item._id}>
+              <TranscriptCard
+                id={item._id}
+                text={item.text}
+                bgColor={cardColors[item._id]}
+                isSpeaking={isSpeaking}
+                speakingIndex={speakingIndex}
+                speakingId={speakingId}
+                onDelete={handleDelete}
+                onSpeak={handleSpeak}
+                onEdit={handleEdit}
+              />
+            </div>
           ))}
         </div>
       ) : (

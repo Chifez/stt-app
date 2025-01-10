@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTranscript } from './transcript-action';
+import { createTranscript } from '@/lib/utils/functions/transcript-action';
 import { useToast } from '@/hooks/use-toast';
 
 export const useCreateTranscript = (setTranscript: any, setOpen: any) => {

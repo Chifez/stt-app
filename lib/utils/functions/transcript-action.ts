@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { baseUrl } from '../baseurl';
+import { baseUrl } from './helpers';
 
 const BASE_URL = `https://${baseUrl}`;
 
@@ -27,8 +27,6 @@ export const createTranscript = async (transcriptData: any) => {
   }
 
   const responseData = await response.json(); // Await the response JSON
-  console.log('response from actions', responseData);
-
   return responseData; // Return the JSON data directly
 };
 
@@ -50,7 +48,6 @@ export const getTranscripts = async () => {
     throw new Error(errorData.error || 'Failed to get transcript');
   }
   const responseData = await response.json();
-  console.log('list', responseData);
   return responseData;
 };
 
@@ -81,7 +78,6 @@ export const updateTranscripts = async ({
     throw new Error(errorData.error || 'Failed to get transcript');
   }
   const responseData = await response.json();
-  console.log('list', responseData);
   return responseData;
 };
 
@@ -104,7 +100,6 @@ export const deleteTranscripts = async (id: string) => {
     throw new Error(errorData.error || 'Failed to get transcript');
   }
   const responseData = await response.json();
-  console.log('list', responseData);
   return responseData;
 };
 
@@ -126,6 +121,5 @@ export async function getUserProfile() {
     throw new Error(errorData.error || 'Failed to get transcript');
   }
   const responseData = await response.json();
-  console.log('list', responseData);
   return responseData;
 }

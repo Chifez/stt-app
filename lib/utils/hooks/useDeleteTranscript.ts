@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteTranscripts } from './transcript-action';
+import { deleteTranscripts } from '@/lib/utils/functions/transcript-action';
 import { useToast } from '@/hooks/use-toast';
 
 export const useDeleteTranscript = () => {

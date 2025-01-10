@@ -13,8 +13,8 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useAudioContext } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 import { useGetProfile } from '@/lib/utils/hooks/useUserProfile';
-import { baseUrl } from '@/lib/utils/baseurl';
 import { useToast } from '@/hooks/use-toast';
+import { baseUrl } from '@/lib/utils/functions/helpers';
 
 interface LayoutProps {
   children: React.ReactNode;

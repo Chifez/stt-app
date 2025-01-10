@@ -47,7 +47,13 @@ const HistoryPage = () => {
   const { convertToSpeech, isSpeaking, speakingIndex, speakingId } =
     useConverter();
 
-  // Memoize the color generation function
+  /**
+   * @function generateColorMap
+   * @description generates a key value pair for the background colour of each transcript card
+   * @param accepts arrays of transcripts
+   * @returns an object with each transcript card mapped to a color code
+   */
+
   const generateColorMap = useCallback((transcripts: Transcript[]) => {
     const newColors: Record<string, string> = {};
     transcripts?.forEach((transcript) => {

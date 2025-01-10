@@ -1,5 +1,8 @@
 'use client';
 
+/**
+ * @interface global declaration of the window object
+ */
 declare global {
   interface Window {
     webkitSpeechRecognition: any;
@@ -11,11 +14,12 @@ import { Copy, Mic, RotateCcw, Square, Pencil } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { AudioWave } from '../shared/AudioWave';
 import useConverter from '@/lib/utils/hooks/useConverter';
-import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
+import { copyTranscript } from '@/lib/utils/functions/helpers';
 import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
 import ShareTranscript from '../shared/shareTranscript';
 import EditableContent from '../shared/EditableContent';
+import { useToast } from '@/hooks/use-toast';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);
@@ -28,6 +32,7 @@ const Convert = () => {
     convertToText: onListening,
   } = useConverter();
 
+  const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +41,12 @@ const Convert = () => {
     setEditing(!editing);
   };
 
+  const handleCopy = () => {
+    copyTranscript(transcript);
+    return toast({
+      description: 'copied successfully',
+    });
+  };
   useEffect(() => {
     // this isn't working for some reason
     if (contentRef.current) {
@@ -50,10 +61,7 @@ const Convert = () => {
         className="relative w-full md:w-[80%] min-h-[300px] md:min-h-[200px] overflow-y-scroll scrollbar-hide max-h-[400px] md:max-h-[250px] mx-auto py-8 px-2 bg-blue-300/80"
       >
         <div className="absolute top-2 z-10 right-2 flex items-center gap-4 action-icons">
-          <span
-            className="cursor-pointer"
-            onClick={() => copyTranscript(transcript)}
-          >
+          <span className="cursor-pointer" onClick={handleCopy}>
             <Copy size={16} strokeWidth={1.25} />
           </span>
           <SaveDialog transcript={transcript} setTranscript={setTranscript} />

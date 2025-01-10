@@ -1,6 +1,6 @@
 // hooks/useTranscripts.js
 import { useQuery } from '@tanstack/react-query';
-import { getTranscripts } from './transcript-action';
+import { getTranscripts } from '@/lib/utils/functions/transcript-action';
 
 export const useGetTranscripts = () => {
   return useQuery({

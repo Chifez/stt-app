@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getUserProfile } from './transcript-action';
+import { getUserProfile } from '@/lib/utils/functions/transcript-action';
 
 export const useGetProfile = () => {
   return useQuery({

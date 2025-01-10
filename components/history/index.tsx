@@ -13,12 +13,11 @@ import TranscriptCard from '../shared/TranscriptCard';
 import { ListFilter, Loader2, Search } from 'lucide-react';
 import { Input } from '../ui/input';
 import Link from 'next/link';
-import { AudioFileProvider } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 import { useGetTranscripts } from '@/lib/utils/hooks/useFetchTranscript';
 import { useUpdateTranscript } from '@/lib/utils/hooks/useUpdateTranscript';
 import { useDeleteTranscript } from '@/lib/utils/hooks/useDeleteTranscript';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 
 interface Transcript {
   _id: string;

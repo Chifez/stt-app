@@ -17,9 +17,10 @@ import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/helpers';
 import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
-import ShareTranscript from '../shared/shareTranscript';
+
 import EditableContent from '../shared/EditableContent';
 import { useToast } from '@/hooks/use-toast';
+import ShareTranscript from '@/components/shared/ShareTranscript';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);

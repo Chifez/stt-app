@@ -2,7 +2,7 @@ import { memo, useRef, useState } from 'react';
 import { Card, CardContent, CardFooter } from '../ui/card';
 import { Copy, Trash, Volume2, Pencil } from 'lucide-react';
 import { copyTranscript } from '@/lib/utils/functions/helpers';
-import ShareTranscript from './shareTranscript';
+import ShareTranscript from './ShareTranscript';
 import EditableContent from './EditableContent';
 import { useToast } from '@/hooks/use-toast';
 

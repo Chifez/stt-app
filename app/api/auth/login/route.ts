@@ -4,8 +4,6 @@ import dbConnect from '@/lib/utils/controllers/dbConnect';
 import User from '@/lib/models/user';
 import { signToken } from '@/lib/utils/controllers/authMiddleware';
 
-// dbConnect();
-
 export async function POST(request: NextRequest): Promise<any> {
   await dbConnect();
   try {

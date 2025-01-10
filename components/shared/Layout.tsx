@@ -1,12 +1,20 @@
 'use client';
 
-import { ChevronLeftIcon, Mic, NotepadText, Podcast } from 'lucide-react';
+import {
+  ChevronLeftIcon,
+  LogOut,
+  Mic,
+  NotepadText,
+  Podcast,
+} from 'lucide-react';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useAudioContext } from '@/lib/utils/context/audiofilecontext/useAudioFile';
 import { useGetProfile } from '@/lib/utils/hooks/useUserProfile';
+import { baseUrl } from '@/lib/utils/baseurl';
+import { useToast } from '@/hooks/use-toast';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
   const { setAudioFile } = useAudioContext();
 
   const { convertToText: onListening } = useConverter();
+  const { toast } = useToast();
 
   const { data } = useGetProfile();
   const router = useRouter();
@@ -30,6 +39,20 @@ const Layout = ({ children }: LayoutProps) => {
     }
     // Call the onListening function
     onListening();
+  };
+
+  const handleLogout = async () => {
+    const response = await fetch(`https://${baseUrl}/api/auth/logout`);
+    if (!response.ok) {
+      toast({
+        description: 'An error occurred',
+      });
+      return;
+    }
+    toast({
+      description: 'Logout successful',
+    });
+    router.push('/auth/login');
   };
 
   const getAudioFile = () => {
@@ -75,13 +98,17 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link
+          <button onClick={handleLogout} className="cursor-pointer">
+            <LogOut strokeWidth={1.25} />
+          </button>
+
+          {/* <Link
             href="/converter"
             className="cursor-pointer"
             onClick={getAudioFile}
           >
             <Podcast strokeWidth={1.25} />
-          </Link>
+          </Link> */}
           <Link href="/converter" className="cursor-pointer">
             <Mic strokeWidth={1.25} />
           </Link>

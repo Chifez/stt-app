@@ -1,7 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import { cookies } from 'next/headers';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
 import { redirect } from 'next/navigation';
 import { baseUrl } from '@/lib/utils/baseurl';
@@ -12,13 +11,6 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-console.log(
-  'URLS',
-  process.env.VERCEL_URL,
-  process.env.NEXT_PUBLIC_VERCEL_URL,
-  process.env.NEXT_PUBLIC_API_URL,
-  baseUrl
-);
 export async function register(prevState: any, formData: FormData) {
   if (!formData) {
     return { error: 'Form data is missing' };
@@ -31,9 +23,6 @@ export async function register(prevState: any, formData: FormData) {
   if (!name || !email || !password) {
     return { error: 'All fields are required' };
   }
-  console.log('baseURL', baseUrl);
-  console.log('Node ENV:', process.env.NODE_ENV); // Add this line
-  console.log('Base URL:', baseUrl); // Add this line
 
   const validatedFields = registerSchema.safeParse({ name, email, password });
   console.log(validatedFields.data);
@@ -57,7 +46,6 @@ export async function register(prevState: any, formData: FormData) {
   if (!response.ok) {
     return { error: data.error || 'Registration failed' };
   }
-  console.log('token here 3', data.token);
   await createSession(data.token);
   redirect('/converter');
 }

@@ -14,7 +14,7 @@ import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/copyTranscript';
 import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
-import ShareTranscript from '../shared/shareTranscript';
+import ShareTranscript from '../shared/ShareTranscript';
 import EditableContent from '../shared/EditableContent';
 
 const Convert = () => {

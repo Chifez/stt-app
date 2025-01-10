@@ -15,8 +15,7 @@ export default function AuthLayout({
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center">
         <Link className="flex items-center justify-center" href="#">
-          <span className="sr-only">Your Company</span>
-          <span className="font-bold text-xl">YourLogo</span>
+          <p className="font-bold">Convertly</p>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link href="/auth/login">

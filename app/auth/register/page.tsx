@@ -1,20 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { register } from './actions';
 import { useActionState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { useFormStatus } from 'react-dom';
 import SubmitButton from '@/components/shared/SubmitButton';
 
 export default function RegisterPage() {
   const [state, formAction] = useActionState(register, undefined);
-  const { pending } = useFormStatus();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -42,6 +37,9 @@ export default function RegisterPage() {
           <Label htmlFor="name">Name</Label>
           <Input id="name" name="name" placeholder="John Doe" required />
         </div>
+        {state?.errors?.name && (
+          <p className="text-red-500">{state.errors.name}</p>
+        )}
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -52,6 +50,9 @@ export default function RegisterPage() {
             type="email"
           />
         </div>
+        {state?.errors?.email && (
+          <p className="text-red-500">{state.errors.email}</p>
+        )}
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input
@@ -62,7 +63,9 @@ export default function RegisterPage() {
             minLength={6}
           />
         </div>
-        {state?.error && <p className="text-red-500">{state.error}</p>}
+        {state?.errors?.password && (
+          <p className="text-red-500">{state.errors.password}</p>
+        )}
         <SubmitButton label="loading...">Register</SubmitButton>
       </form>
     </div>

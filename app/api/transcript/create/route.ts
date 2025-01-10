@@ -20,9 +20,7 @@ export async function POST(req: NextRequest): Promise<any> {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    console.log('user from backend', user);
     const newTranscript = await Transcript.create({ userId: user.id, text });
-    console.log('newTranscript', newTranscript);
     return NextResponse.json({ data: newTranscript }, { status: 201 });
   } catch (error) {
     return NextResponse.json(

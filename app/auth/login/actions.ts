@@ -1,7 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import { cookies } from 'next/headers';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
 import { redirect } from 'next/navigation';
 import { baseUrl } from '@/lib/utils/baseurl';
@@ -26,8 +25,9 @@ export async function login(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse({ email, password });
 
   if (!validatedFields.success) {
-    const errors = validatedFields.error.errors.map((error) => error.message);
-    return { error: errors.join(', ') };
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
   const response = await fetch(`https://${baseUrl}/api/auth/login`, {
@@ -41,7 +41,6 @@ export async function login(prevState: any, formData: FormData) {
   if (!response.ok) {
     return { error: data.error || 'Login failed' };
   }
-  console.log('token here 2', data.token);
   await createSession(data.token);
   redirect('/converter');
 }

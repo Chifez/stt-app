@@ -2,12 +2,11 @@ import User from '@/lib/models/user';
 import dbConnect from '@/lib/utils/controllers/dbConnect';
 import { NextRequest, NextResponse } from 'next/server';
 
-dbConnect();
-
 export async function POST(request: NextRequest): Promise<any> {
+  await dbConnect();
   try {
     const reqBody = await request.json();
-    const { token, email } = reqBody;
+    const { token } = reqBody;
 
     const user = await User.findOne({
       verifyToken: token,

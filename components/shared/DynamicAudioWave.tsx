@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 interface DynamicAudioWaveProps {
   isListening: boolean;
@@ -18,126 +18,118 @@ export const DynamicAudioWave = ({
   color = 'currentColor',
 }: DynamicAudioWaveProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const microphoneRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const staticIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Consolidate all audio-related refs into a single object
+  const audioRefs = useRef({
+    animationFrame: null as number | null,
+    audioContext: null as AudioContext | null,
+    analyser: null as AnalyserNode | null,
+    microphone: null as MediaStreamAudioSourceNode | null,
+    stream: null as MediaStream | null,
+    staticInterval: null as NodeJS.Timeout | null,
+  });
 
   const [audioData, setAudioData] = useState<number[]>(() =>
     Array.from({ length: barCount }, () => 0)
   );
 
-  const setupAudioContext = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+  useEffect(() => {
+    const refs = audioRefs.current;
+
+    const drawVisualization = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Set color
+      ctx.fillStyle = color;
+
+      const barWidth = width / barCount;
+
+      // Draw frequency bars
+      audioData.forEach((value, index) => {
+        const barHeight = (value / 255) * height * 0.8;
+        const x = index * barWidth;
+        const y = (height - barHeight) / 2;
+
+        ctx.fillRect(x, y, barWidth * 0.8, barHeight);
       });
-      streamRef.current = stream;
-
-      audioContextRef.current = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
-
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-      analyserRef.current.smoothingTimeConstant = 0.8;
-
-      microphoneRef.current =
-        audioContextRef.current.createMediaStreamSource(stream);
-      microphoneRef.current.connect(analyserRef.current);
-
-      return true;
-    } catch (error) {
-      console.error('Error setting up audio context:', error);
-      return false;
-    }
-  }, []);
-
-  const analyzeAudio = useCallback(() => {
-    if (!analyserRef.current) return;
-
-    const bufferLength = analyserRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyserRef.current.getByteFrequencyData(dataArray);
-
-    const step = Math.floor(bufferLength / barCount);
-    const newAudioData: number[] = [];
-
-    for (let i = 0; i < barCount; i++) {
-      const start = i * step;
-      const end = Math.min(start + step, bufferLength);
-      let sum = 0;
-
-      for (let j = start; j < end; j++) {
-        sum += dataArray[j];
-      }
-
-      const average = sum / (end - start);
-      const normalized = Math.min(average / 255, 1);
-      const scaled = Math.pow(normalized, 0.6);
-
-      newAudioData.push(scaled);
-    }
-
-    setAudioData(newAudioData);
-    animationRef.current = requestAnimationFrame(analyzeAudio);
-  }, [barCount]);
-
-  const startStaticAnimation = useCallback(() => {
-    const animate = () => {
-      const time = Date.now() * 0.001;
-      const staticData = Array.from({ length: barCount }, (_, i) => {
-        const wave = Math.sin(time + i * 0.2) * 0.1 + 0.1;
-        return Math.max(0.05, wave);
-      });
-      setAudioData(staticData);
     };
 
-    staticIntervalRef.current = setInterval(animate, 50);
-  }, [barCount]);
+    const setupAudioContext = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+        refs.stream = stream;
 
-  const drawVisualization = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+        refs.audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+        refs.analyser = refs.audioContext.createAnalyser();
+        refs.analyser.fftSize = 256;
+        refs.analyser.smoothingTimeConstant = 0.8;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+        refs.microphone = refs.audioContext.createMediaStreamSource(stream);
+        refs.microphone.connect(refs.analyser);
 
-    // Clear and setup canvas
-    ctx.clearRect(0, 0, width, height);
-    canvas.width = width;
-    canvas.height = height;
-    ctx.fillStyle = color;
-
-    // Draw bars
-    const barWidth = width / barCount;
-    const maxBarHeight = height * 0.8;
-    const minBarHeight = 2;
-
-    audioData.forEach((amplitude, index) => {
-      const barHeight = Math.max(minBarHeight, amplitude * maxBarHeight);
-      const x = index * barWidth;
-      const y = (height - barHeight) / 2;
-      const radius = Math.min(barWidth / 4, 2);
-
-      ctx.beginPath();
-      if ('roundRect' in ctx && typeof (ctx as any).roundRect === 'function') {
-        (ctx as any).roundRect(x + 1, y, barWidth - 2, barHeight, radius);
-      } else {
-        ctx.rect(x + 1, y, barWidth - 2, barHeight);
+        return true;
+      } catch (error) {
+        console.error('Error setting up audio context:', error);
+        return false;
       }
-      ctx.fill();
-    });
-  }, [width, height, barCount, color, audioData]);
+    };
 
-  // Single useEffect to handle everything
-  useEffect(() => {
-    // Always draw the current state
+    const analyzeAudio = () => {
+      if (!refs.analyser) return;
+
+      const bufferLength = refs.analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      refs.analyser.getByteFrequencyData(dataArray);
+
+      // Sample data for visualization
+      const step = Math.floor(bufferLength / barCount);
+      const newAudioData = Array.from({ length: barCount }, (_, i) => {
+        const start = i * step;
+        const end = start + step;
+        const slice = dataArray.slice(start, end);
+        return slice.reduce((sum, value) => sum + value, 0) / slice.length;
+      });
+
+      setAudioData(newAudioData);
+      drawVisualization();
+
+      if (isListening) {
+        refs.animationFrame = requestAnimationFrame(analyzeAudio);
+      }
+    };
+
+    const startStaticAnimation = () => {
+      refs.staticInterval = setInterval(() => {
+        if (!isListening) {
+          // Generate subtle breathing animation
+          const newData = Array.from({ length: barCount }, (_, i) => {
+            const center = barCount / 2;
+            const distance = Math.abs(i - center) / center;
+            const baseHeight = 20 - distance * 15;
+            const variation = Math.sin(Date.now() * 0.003 + i * 0.5) * 5;
+            return Math.max(0, baseHeight + variation);
+          });
+          setAudioData(newData);
+          drawVisualization();
+        }
+      }, 50);
+    };
+
+    // Main effect logic
     drawVisualization();
 
     if (isListening) {
@@ -153,45 +145,36 @@ export const DynamicAudioWave = ({
     // Cleanup function
     return () => {
       // Stop animation frame
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
+      if (refs.animationFrame) {
+        cancelAnimationFrame(refs.animationFrame);
+        refs.animationFrame = null;
       }
 
       // Stop static animation interval
-      if (staticIntervalRef.current) {
-        clearInterval(staticIntervalRef.current);
-        staticIntervalRef.current = null;
+      if (refs.staticInterval) {
+        clearInterval(refs.staticInterval);
+        refs.staticInterval = null;
       }
 
       // Stop microphone stream
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
+      if (refs.stream) {
+        refs.stream.getTracks().forEach((track) => track.stop());
+        refs.stream = null;
       }
 
       // Disconnect audio nodes
-      if (microphoneRef.current) {
-        microphoneRef.current.disconnect();
-        microphoneRef.current = null;
+      if (refs.microphone) {
+        refs.microphone.disconnect();
+        refs.microphone = null;
       }
 
       // Close audio context
-      if (
-        audioContextRef.current &&
-        audioContextRef.current.state !== 'closed'
-      ) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
+      if (refs.audioContext && refs.audioContext.state !== 'closed') {
+        refs.audioContext.close();
+        refs.audioContext = null;
       }
     };
-  }, [
-    isListening,
-    setupAudioContext,
-    analyzeAudio,
-    startStaticAnimation,
-    drawVisualization,
-  ]);
+  }, [isListening, audioData, barCount, width, height, color]);
 
   return (
     <div className="flex items-center justify-center">

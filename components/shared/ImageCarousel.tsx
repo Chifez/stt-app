@@ -84,7 +84,7 @@ export function ImageCarousel() {
                 current === index + 1 ? 'w-4' : 'w-2'
               } h-2 transition-all rounded-full bg-white cursor-pointer`}
               onClick={() => api?.scrollTo(index)}
-            />
+            ></span>
           ))}
         </div>
       </Carousel>

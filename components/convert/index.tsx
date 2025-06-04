@@ -15,7 +15,7 @@ import { Card, CardContent } from '../ui/card';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/helpers';
 import { SaveDialog } from '../shared/Dialog';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 import EditableContent from '../shared/EditableContent';
 import { toast } from 'sonner';
@@ -23,7 +23,12 @@ import ShareTranscript from '../shared/ShareTranscript';
 import { DynamicAudioWave } from '../shared/DynamicAudioWave';
 
 const Convert = () => {
-  const [editing, setEditing] = useState(false);
+  // Consolidate UI state into single object
+  const [uiState, setUiState] = useState({
+    editing: false,
+    microphoneGranted: false,
+  });
+
   const {
     transcript,
     interimTranscript,
@@ -31,18 +36,73 @@ const Convert = () => {
     isLoading,
     error,
     isSupported,
+    isRecognitionReady,
     stopListening,
     setTranscript,
     convertToText: onListening,
+    initializeSpeechRecognition,
     clearError,
   } = useConverter();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  // Auto-request microphone permission on mount
+  useEffect(() => {
+    const requestMicrophoneAccess = async () => {
+      if (!isSupported) {
+        setUiState((prev) => ({ ...prev, microphoneGranted: false }));
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        setUiState((prev) => ({ ...prev, microphoneGranted: true }));
+        // Stop the stream since we just needed to check permission
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Pre-initialize speech recognition now that we have microphone access
+        initializeSpeechRecognition();
+
+        toast.success('Microphone access granted! Speech recognition ready.');
+      } catch (error: any) {
+        setUiState((prev) => ({ ...prev, microphoneGranted: false }));
+        if (error.name === 'NotAllowedError') {
+          toast.error('Microphone access denied', {
+            description:
+              'Please allow microphone access to use speech recognition',
+          });
+        } else if (error.name === 'NotFoundError') {
+          toast.error('No microphone found', {
+            description: 'Please connect a microphone and refresh the page',
+          });
+        } else {
+          toast.error('Unable to access microphone', {
+            description: 'Please check your browser settings',
+          });
+        }
+      }
+    };
+
+    requestMicrophoneAccess();
+  }, [isSupported, initializeSpeechRecognition]);
+
+  // Auto-scroll effect with ref callback instead of useEffect
+  const handleContentRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node && (transcript || interimTranscript)) {
+        node.scrollTop = node.scrollHeight;
+      }
+      contentRef.current = node;
+    },
+    [transcript, interimTranscript]
+  );
+
   const toggleEdit = () => {
     if (!transcript) return;
-    setEditing(!editing);
+    setUiState((prev) => ({ ...prev, editing: !prev.editing }));
   };
 
   const handleCopy = () => {
@@ -51,16 +111,15 @@ const Convert = () => {
   };
 
   const handleStartListening = () => {
+    if (!uiState.microphoneGranted || !isRecognitionReady) {
+      toast.error('Speech recognition not ready', {
+        description: 'Please wait for initialization to complete',
+      });
+      return;
+    }
     clearError();
     onListening();
   };
-
-  // Auto-scroll effect - only runs when transcript content changes
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-    }
-  }, [transcript, interimTranscript]);
 
   return (
     <>
@@ -83,7 +142,7 @@ const Convert = () => {
           </button>
         </div>
         <CardContent
-          ref={contentRef}
+          ref={handleContentRef}
           className="flex-1 min-h-[80%] overflow-y-auto scrollbar-hide"
         >
           <div className="flex flex-col h-full">
@@ -118,8 +177,10 @@ const Convert = () => {
                   content={transcript}
                   onSave={setTranscript}
                   className="flex flex-wrap h-full"
-                  isEditing={editing}
-                  setIsEditing={setEditing}
+                  isEditing={uiState.editing}
+                  setIsEditing={(editing) =>
+                    setUiState((prev) => ({ ...prev, editing }))
+                  }
                 />
                 {isListening && (
                   <p className="bg-black px-1 w-fit rounded-sm text-white">
@@ -130,7 +191,11 @@ const Convert = () => {
               </>
             ) : (
               <p className="text-gray-500 text-start italic">
-                Click the microphone to start recording...
+                {uiState.microphoneGranted && isRecognitionReady
+                  ? 'Click the microphone to start recording...'
+                  : uiState.microphoneGranted
+                  ? 'Preparing speech recognition...'
+                  : 'Requesting microphone access...'}
               </p>
             )}
           </div>
@@ -139,31 +204,6 @@ const Convert = () => {
 
       <div className="flex flex-col items-center justify-center mx-auto mb-1">
         <DynamicAudioWave isListening={isListening} />
-
-        {/* Previous simple visualization - kept for reference
-        <div className="flex items-center justify-center space-x-1 h-10">
-          {isListening ? (
-            Array.from({ length: 5 }, (_, i) => (
-              <div
-                key={i}
-                className={`w-1 bg-blue-500 rounded-full animate-pulse`}
-                style={{
-                  height: `${20 + Math.random() * 20}px`,
-                  animationDelay: `${i * 0.1}s`,
-                  animationDuration: '0.6s',
-                }}
-              />
-            ))
-          ) : (
-            Array.from({ length: 5 }, (_, i) => (
-              <div
-                key={i}
-                className="w-1 h-3 bg-gray-300 rounded-full"
-              />
-            ))
-          )}
-        </div>
-        */}
 
         <p className={`text-gray-500 ${isListening ? 'visible' : 'invisible'}`}>
           Now listening
@@ -184,13 +224,29 @@ const Convert = () => {
         </button>
         <button
           onClick={handleStartListening}
-          disabled={!isSupported || isLoading}
+          disabled={
+            !isSupported ||
+            !uiState.microphoneGranted ||
+            !isRecognitionReady ||
+            isLoading
+          }
           className={`p-2 rounded-full transition-colors ${
-            !isSupported || isLoading
-              ? 'text-gray-400 cursor-not-allowed'
-              : 'hover:bg-blue-300/80 text-gray-700'
+            isSupported &&
+            uiState.microphoneGranted &&
+            isRecognitionReady &&
+            !isLoading
+              ? 'hover:bg-blue-300/80 text-gray-700'
+              : 'text-gray-400 cursor-not-allowed'
           }`}
-          title="Start recording"
+          title={
+            !isSupported
+              ? 'Speech recognition not supported'
+              : !uiState.microphoneGranted
+              ? 'Microphone access required'
+              : !isRecognitionReady
+              ? 'Speech recognition initializing...'
+              : 'Start recording'
+          }
         >
           <Mic strokeWidth={1.5} />
         </button>

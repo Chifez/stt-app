@@ -23,10 +23,15 @@ export function SaveDialog({
   setTranscript: (transcript: string | any) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const { mutate, isPending } = useCreateTranscript(setTranscript, setOpen);
+  const { mutate, isPending } = useCreateTranscript();
 
   const handleSave = () => {
-    mutate(transcript);
+    mutate(transcript, {
+      onSuccess: () => {
+        setTranscript('');
+        setOpen(false);
+      },
+    });
   };
 
   // Don't allow opening dialog if transcript is empty

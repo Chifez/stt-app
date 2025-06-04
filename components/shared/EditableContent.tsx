@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 
 interface EditableContentProps {
   content: any;
@@ -17,13 +17,15 @@ const EditableContent = ({
   setIsEditing,
   isEditing,
 }: EditableContentProps) => {
-  const [text, setText] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
     setIsEditing(false);
-    if (text !== content) {
-      onSave(text);
+    if (textarea.value !== content) {
+      onSave(textarea.value);
     }
   };
 
@@ -32,31 +34,31 @@ const EditableContent = ({
       handleSave();
     }
     if (e.key === 'Escape') {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        textarea.value = content;
+      }
       setIsEditing(false);
-      setText(content);
     }
   };
 
   // Setup textarea when entering edit mode
-  const setupTextarea = (textarea: HTMLTextAreaElement) => {
-    setText(content);
+  const setupTextarea = (textarea: HTMLTextAreaElement | null) => {
+    if (!textarea) return;
+
+    textarea.value = content;
     textarea.focus();
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
+    textareaRef.current = textarea;
   };
 
   return (
     <div className="relative group">
       {isEditing ? (
         <textarea
-          ref={(textarea) => {
-            textareaRef.current = textarea;
-            if (textarea) {
-              setupTextarea(textarea);
-            }
-          }}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          ref={setupTextarea}
+          onChange={() => {}} // Controlled by ref, not state
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           className={`w-full bg-transparent outline-none resize-none ${className}`}

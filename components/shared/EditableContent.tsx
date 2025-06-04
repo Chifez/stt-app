@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 interface EditableContentProps {
   content: any;
   onSave: (newContent: string) => void;
   className?: string;
   isEditing: boolean;
-  setIsEditing: (e: any) => void;
+  setIsEditing: (editing: boolean) => void;
 }
 
 const EditableContent = ({
@@ -19,16 +19,6 @@ const EditableContent = ({
 }: EditableContentProps) => {
   const [text, setText] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      setText(content);
-      textareaRef.current.focus();
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + 'px';
-    }
-  }, [isEditing]);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -47,11 +37,24 @@ const EditableContent = ({
     }
   };
 
+  // Setup textarea when entering edit mode
+  const setupTextarea = (textarea: HTMLTextAreaElement) => {
+    setText(content);
+    textarea.focus();
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  };
+
   return (
     <div className="relative group">
       {isEditing ? (
         <textarea
-          ref={textareaRef}
+          ref={(textarea) => {
+            textareaRef.current = textarea;
+            if (textarea) {
+              setupTextarea(textarea);
+            }
+          }}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onBlur={handleSave}

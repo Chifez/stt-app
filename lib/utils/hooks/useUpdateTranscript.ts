@@ -1,18 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateTranscripts } from '@/lib/utils/functions/transcript-action';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { updateTranscript } from '@/lib/utils/functions/transcript-action';
 
 export const useUpdateTranscript = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: updateTranscripts,
-    mutationKey: ['transcript'],
+    mutationFn: ({ id, newText }: { id: string; newText: string }) =>
+      updateTranscript(id, newText),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transcripts'] });
-      return toast({
-        description: 'Updated successfully',
+      toast.success('Transcript updated successfully');
+    },
+    onError: (error: any) => {
+      console.error('Update transcript error:', error);
+      toast.error('Failed to update transcript', {
+        description: error?.message || 'Please try again later',
       });
     },
   });

@@ -2,8 +2,8 @@
 
 import { z } from 'zod';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
+import { buildApiUrl } from '@/lib/utils/functions/helpers';
 import { redirect } from 'next/navigation';
-import { baseUrl } from '@/lib/utils/functions/helpers';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -30,17 +30,28 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const response = await fetch(`https://${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(validatedFields.data),
-  });
+  try {
+    const response = await fetch(buildApiUrl('/api/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validatedFields.data),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!response.ok) {
-    return { error: data.error || 'Login failed' };
+    if (!response.ok) {
+      return { error: data.error || 'Login failed' };
+    }
+
+    // Create session with the token
+    if (data.token) {
+      await createSession(data.token);
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    return { error: 'Network error. Please try again.' };
   }
-  await createSession(data.token);
+
+  // Redirect after successful login - outside try-catch
   redirect('/converter');
 }

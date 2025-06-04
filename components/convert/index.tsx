@@ -12,15 +12,15 @@ declare global {
 
 import { Copy, Mic, RotateCcw, Square, Pencil } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
-import { AudioWave } from '../shared/AudioWave';
 import useConverter from '@/lib/utils/hooks/useConverter';
 import { copyTranscript } from '@/lib/utils/functions/helpers';
 import { SaveDialog } from '../shared/Dialog';
 import { useRef, useEffect, useState } from 'react';
 
 import EditableContent from '../shared/EditableContent';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import ShareTranscript from '../shared/ShareTranscript';
+import { DynamicAudioWave } from '../shared/DynamicAudioWave';
 
 const Convert = () => {
   const [editing, setEditing] = useState(false);
@@ -28,12 +28,15 @@ const Convert = () => {
     transcript,
     interimTranscript,
     isListening,
+    isLoading,
+    error,
+    isSupported,
     stopListening,
     setTranscript,
     convertToText: onListening,
+    clearError,
   } = useConverter();
 
-  const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -44,12 +47,16 @@ const Convert = () => {
 
   const handleCopy = () => {
     copyTranscript(transcript);
-    return toast({
-      description: 'copied successfully',
-    });
+    toast.success('Copied successfully');
   };
+
+  const handleStartListening = () => {
+    clearError();
+    onListening();
+  };
+
+  // Auto-scroll effect - only runs when transcript content changes
   useEffect(() => {
-    // this isn't working for some reason
     if (contentRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
@@ -80,7 +87,32 @@ const Convert = () => {
           className="flex-1 min-h-[80%] overflow-y-auto scrollbar-hide"
         >
           <div className="flex flex-col h-full">
-            {transcript || interimTranscript ? (
+            {!isSupported ? (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-2">
+                <p className="text-red-500 font-medium">
+                  Speech recognition is not supported in your browser
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Please try using Chrome, Edge, or Safari
+                </p>
+              </div>
+            ) : isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">
+                  Initializing speech recognition...
+                </p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-2">
+                <p className="text-red-500 font-medium">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-blue-600 hover:text-blue-800 text-sm underline"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : transcript || interimTranscript ? (
               <>
                 <EditableContent
                   content={transcript}
@@ -105,35 +137,75 @@ const Convert = () => {
         </CardContent>
       </Card>
 
-      <div>
-        <div className="flex flex-col items-center justify-center mx-auto mb-1">
-          <AudioWave isListening={isListening} />
-          <p
-            className={`text-gray-500 ${isListening ? 'visible' : 'invisible'}`}
-          >
-            Now listening
-          </p>
+      <div className="flex flex-col items-center justify-center mx-auto mb-1">
+        <DynamicAudioWave isListening={isListening} />
+
+        {/* Previous simple visualization - kept for reference
+        <div className="flex items-center justify-center space-x-1 h-10">
+          {isListening ? (
+            Array.from({ length: 5 }, (_, i) => (
+              <div
+                key={i}
+                className={`w-1 bg-blue-500 rounded-full animate-pulse`}
+                style={{
+                  height: `${20 + Math.random() * 20}px`,
+                  animationDelay: `${i * 0.1}s`,
+                  animationDuration: '0.6s',
+                }}
+              />
+            ))
+          ) : (
+            Array.from({ length: 5 }, (_, i) => (
+              <div
+                key={i}
+                className="w-1 h-3 bg-gray-300 rounded-full"
+              />
+            ))
+          )}
         </div>
-        <div className="flex items-center justify-center gap-6">
-          <button
-            onClick={stopListening}
-            className="hover:bg-blue-300/80 p-2 rounded-full"
-          >
-            <Square strokeWidth={1.5} />
-          </button>
-          <button
-            onClick={onListening}
-            className="hover:bg-blue-300/80 p-2 rounded-full"
-          >
-            <Mic strokeWidth={1.5} />
-          </button>
-          <button
-            onClick={() => setTranscript('')}
-            className="hover:bg-blue-300/80 p-2 rounded-full"
-          >
-            <RotateCcw strokeWidth={1.5} />
-          </button>
-        </div>
+        */}
+
+        <p className={`text-gray-500 ${isListening ? 'visible' : 'invisible'}`}>
+          Now listening
+        </p>
+      </div>
+      <div className="flex items-center justify-center gap-6">
+        <button
+          onClick={stopListening}
+          disabled={!isListening}
+          className={`p-2 rounded-full transition-colors ${
+            isListening
+              ? 'hover:bg-blue-300/80 text-gray-700'
+              : 'text-gray-400 cursor-not-allowed'
+          }`}
+          title="Stop recording"
+        >
+          <Square strokeWidth={1.5} />
+        </button>
+        <button
+          onClick={handleStartListening}
+          disabled={!isSupported || isLoading}
+          className={`p-2 rounded-full transition-colors ${
+            !isSupported || isLoading
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'hover:bg-blue-300/80 text-gray-700'
+          }`}
+          title="Start recording"
+        >
+          <Mic strokeWidth={1.5} />
+        </button>
+        <button
+          onClick={() => setTranscript('')}
+          disabled={!transcript}
+          className={`p-2 rounded-full transition-colors ${
+            transcript
+              ? 'hover:bg-blue-300/80 text-gray-700'
+              : 'text-gray-400 cursor-not-allowed'
+          }`}
+          title="Clear transcript"
+        >
+          <RotateCcw strokeWidth={1.5} />
+        </button>
       </div>
     </>
   );

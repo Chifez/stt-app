@@ -2,8 +2,8 @@
 
 import { z } from 'zod';
 import { createSession } from '@/lib/utils/controllers/authMiddleware';
+import { buildApiUrl } from '@/lib/utils/functions/helpers';
 import { redirect } from 'next/navigation';
-import { baseUrl } from '@/lib/utils/functions/helpers';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -25,27 +25,35 @@ export async function register(prevState: any, formData: FormData) {
   }
 
   const validatedFields = registerSchema.safeParse({ name, email, password });
-  console.log(validatedFields.data);
 
   if (!validatedFields.success) {
-    // const errors = validatedFields.error.errors.map((error) => error.message);
-    // return { error: errors.join(', ') };
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
 
-  const response = await fetch(`https://${baseUrl}/api/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(validatedFields.data),
-  });
+  try {
+    const response = await fetch(buildApiUrl('/api/auth/register'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validatedFields.data),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!response.ok) {
-    return { error: data.error || 'Registration failed' };
+    if (!response.ok) {
+      return { error: data.error || 'Registration failed' };
+    }
+
+    // Create session with the token
+    if (data.user?.token) {
+      await createSession(data.user.token);
+    }
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { error: 'Network error. Please try again.' };
   }
-  await createSession(data.token);
+
+  // Redirect after successful registration - outside try-catch
   redirect('/converter');
 }

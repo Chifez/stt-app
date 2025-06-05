@@ -44,7 +44,6 @@ const Convert = () => {
     clearError,
   } = useConverter();
 
-  const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Auto-request microphone permission on mount
@@ -89,16 +88,19 @@ const Convert = () => {
     requestMicrophoneAccess();
   }, [isSupported, initializeSpeechRecognition]);
 
-  // Auto-scroll effect with ref callback instead of useEffect
-  const handleContentRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (node && (transcript || interimTranscript)) {
-        node.scrollTop = node.scrollHeight;
-      }
-      contentRef.current = node;
-    },
-    [transcript, interimTranscript]
-  );
+  // Autoscroll the card when transcript content changes
+  const scrollCardToBottom = useCallback(() => {
+    if (cardRef.current && (transcript || interimTranscript)) {
+      requestAnimationFrame(() => {
+        if (cardRef.current) {
+          cardRef.current.scrollTop = cardRef.current.scrollHeight;
+        }
+      });
+    }
+  }, [transcript, interimTranscript]);
+
+  // Trigger scroll when content changes
+  scrollCardToBottom();
 
   const toggleEdit = () => {
     if (!transcript) return;
@@ -141,10 +143,7 @@ const Convert = () => {
             <Pencil size={14} strokeWidth={1.25} />
           </button>
         </div>
-        <CardContent
-          ref={handleContentRef}
-          className="flex-1 min-h-[80%] overflow-y-auto scrollbar-hide"
-        >
+        <CardContent className="flex-1 min-h-[80%] overflow-y-auto scrollbar-hide">
           <div className="flex flex-col h-full">
             {!isSupported ? (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-2">

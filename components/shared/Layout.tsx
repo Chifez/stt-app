@@ -96,6 +96,7 @@ const Layout = ({ children }: LayoutProps) => {
           </Link>
         </div>
       </nav>
+
       {children}
     </div>
   );

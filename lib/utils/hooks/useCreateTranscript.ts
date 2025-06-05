@@ -1,20 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { createTranscript } from '@/lib/utils/functions/transcript-action';
-import { useToast } from '@/hooks/use-toast';
 
-export const useCreateTranscript = (setTranscript: any, setOpen: any) => {
+export const useCreateTranscript = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: createTranscript,
-    mutationKey: ['transcript'],
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transcripts'] });
-      setTranscript('');
-      setOpen(false);
-      return toast({
-        description: 'Saved successfully',
+      toast.success('Transcript saved successfully');
+    },
+    onError: (error: any) => {
+      console.error('Create transcript error:', error);
+      toast.error('Failed to save transcript', {
+        description: error?.message || 'Please try again later',
       });
     },
   });

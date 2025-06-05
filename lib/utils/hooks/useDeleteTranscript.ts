@@ -1,18 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteTranscripts } from '@/lib/utils/functions/transcript-action';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { deleteTranscript } from '@/lib/utils/functions/transcript-action';
 
 export const useDeleteTranscript = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: deleteTranscripts,
-    mutationKey: ['transcript'],
+    mutationFn: deleteTranscript,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transcripts'] });
-      return toast({
-        description: 'Updated successfully',
+      toast.success('Transcript deleted successfully');
+    },
+    onError: (error: any) => {
+      console.error('Delete transcript error:', error);
+      toast.error('Failed to delete transcript', {
+        description: error?.message || 'Please try again later',
       });
     },
   });

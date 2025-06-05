@@ -35,11 +35,22 @@ export function ImageCarousel() {
     if (!api) {
       return;
     }
+
+    // Set initial current state
     setCurrent(api.selectedScrollSnap() + 1);
 
-    api.on('select', () => {
+    // Create event handler
+    const handleSelect = () => {
       setCurrent(api.selectedScrollSnap() + 1);
-    });
+    };
+
+    // Add event listener
+    api.on('select', handleSelect);
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      api.off('select', handleSelect);
+    };
   }, [api]);
 
   return (
@@ -51,29 +62,27 @@ export function ImageCarousel() {
               key={index}
               className="flex flex-col items-center justify-center w-full"
             >
-              <>
-                <div className="text-center w-[80%] md:w-full mx-auto">
-                  <p className="text-3xl md:text-5xl w-[80%] md:w-full mx-auto font-semibold md:leading-[60px] text-wrap">
-                    {items.title}
-                  </p>
-                  <p className="text-lg italic text-gray-400 font-medium">
-                    {items.description}
-                  </p>
-                </div>
-                <div className=" relative w-[600px] h-[300px] ">
-                  <Image src="/tts-banner.png" fill alt="converter" />
-                </div>
-              </>
+              <div className="text-center w-[80%] md:w-full mx-auto">
+                <p className="text-3xl md:text-5xl w-[80%] md:w-full mx-auto font-semibold md:leading-[60px] text-wrap">
+                  {items.title}
+                </p>
+                <p className="text-lg italic text-gray-400 font-medium">
+                  {items.description}
+                </p>
+              </div>
+              <div className="relative w-[600px] h-[300px]">
+                <Image src="/tts-banner.png" fill alt="converter" />
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="mx-auto absolute bottom-10 left-1/2 -translate-x-1/2  flex items-center justify-center gap-1">
+        <div className="mx-auto absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1">
           {slides.map((_, index) => (
             <span
               key={index}
               className={`${
-                current == index + 1 ? 'w-4' : ' w-2'
-              } h-2 transition-all rounded-full bg-white`}
+                current === index + 1 ? 'w-4' : 'w-2'
+              } h-2 transition-all rounded-full bg-white cursor-pointer`}
               onClick={() => api?.scrollTo(index)}
             ></span>
           ))}

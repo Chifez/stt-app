@@ -1,28 +1,21 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { register } from './actions';
 import { useActionState } from 'react';
 import SubmitButton from '@/components/shared/SubmitButton';
 
 export default function RegisterPage() {
   const [state, formAction] = useActionState(register, undefined);
-  const router = useRouter();
-  const { toast } = useToast();
 
-  const handleSubmit = async (formData: FormData) => {
-    const result: any = await formAction(formData);
-    if (result?.success) {
-      toast({
-        title: 'Registration Successful',
-        description: result.message,
-      });
-      setTimeout(() => router.push('/converter'), 2000);
-    }
-  };
+  // Only show error toasts - success is handled server-side with redirect
+  if (state?.error) {
+    toast.error('Registration Failed', {
+      description: state.error,
+    });
+  }
 
   return (
     <div className="mx-auto max-w-sm space-y-6">
@@ -32,13 +25,19 @@ export default function RegisterPage() {
           Enter your information below to create your account
         </p>
       </div>
-      <form action={handleSubmit} className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" placeholder="John Doe" required />
+          <Input
+            id="name"
+            name="name"
+            placeholder="John Doe"
+            required
+            autoComplete="given-name"
+          />
         </div>
         {state?.errors?.name && (
-          <p className="text-red-500">{state.errors.name}</p>
+          <p className="text-red-500 text-sm">{state.errors.name}</p>
         )}
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -48,10 +47,11 @@ export default function RegisterPage() {
             placeholder="m@example.com"
             required
             type="email"
+            autoComplete="email"
           />
         </div>
         {state?.errors?.email && (
-          <p className="text-red-500">{state.errors.email}</p>
+          <p className="text-red-500 text-sm">{state.errors.email}</p>
         )}
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -61,12 +61,14 @@ export default function RegisterPage() {
             required
             type="password"
             minLength={6}
+            autoComplete="new-password"
           />
         </div>
         {state?.errors?.password && (
-          <p className="text-red-500">{state.errors.password}</p>
+          <p className="text-red-500 text-sm">{state.errors.password}</p>
         )}
-        <SubmitButton label="loading...">Register</SubmitButton>
+        {state?.error && <p className="text-red-500 text-sm">{state.error}</p>}
+        <SubmitButton label="Creating account...">Register</SubmitButton>
       </form>
     </div>
   );

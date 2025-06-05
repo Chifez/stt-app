@@ -4,7 +4,7 @@ import { Copy, Trash, Volume2, Pencil } from 'lucide-react';
 import { copyTranscript } from '@/lib/utils/functions/helpers';
 import ShareTranscript from './ShareTranscript';
 import EditableContent from './EditableContent';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface TranscriptCardProps {
   id: string;
@@ -32,7 +32,6 @@ const TranscriptCard = memo(
   }: TranscriptCardProps) => {
     const [editing, setEditing] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
-    const { toast } = useToast();
 
     const toggleEdit = () => {
       if (!text) return;
@@ -41,9 +40,7 @@ const TranscriptCard = memo(
 
     const handleCopy = () => {
       copyTranscript(text);
-      return toast({
-        description: 'Copied sucessfully',
-      });
+      toast.success('Copied to clipboard');
     };
 
     const highlightSpokenText = (text: string, index: number) => {
